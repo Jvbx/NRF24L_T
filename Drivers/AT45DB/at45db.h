@@ -17,18 +17,14 @@
 #define AT45DB_SPI_TIMEOUT		10					//ftgj!	
 
 
-/*#define 	AT45DB_CMD_SECTORPROTECTIONOFF   ((char []) {0x3D, 0x2A, 0x7F, 0xCF});
-#define 	AT45DB_CMD_SECTORPROTECTIONON    ((char []) {0x3D, 0x2A, 0x7F, 0xFC});
-#define 	AT45DB_CMD_CHIPERASE  					 ((char []) {0xC7, 0x94, 0x80, 0x9A});*/
+
+#define 	AT45DB_CMD_SECTORPROTECTIONOFF   ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xCF});
+#define 	AT45DB_CMD_SECTORPROTECTIONON    ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xFC});
+#define 	AT45DB_CMD_CHIPERASE  					 ((uint8_t []) {0xC7, 0x94, 0x80, 0x9A});
 
 
 /* Registers */
-typedef enum {
-    AT45DB_STATUS      = 0xD7
 
-	
-    
-} AT45DB_REGISTER;
 
 /* Commands */
 typedef enum {
@@ -61,7 +57,8 @@ typedef enum {
 		AT45DB_CMD_R_MAINMEMTOBUF2			 = 0x55,	
 		AT45DB_CMD_R_MAINMEMTOBUF1COMP   = 0x60,
 		AT45DB_CMD_R_MAINMEMTOBUF2COMP   = 0x61,
-		AT45DB_CMD_R_SECTORLOCKDOWN 		 = 0x35
+		AT45DB_CMD_R_SECTORLOCKDOWN 		 = 0x35,
+		AT45DB_CMD_R_SECTORPROTECTION		 = 0x32
 } AT45DB_COMMAND;
 
 typedef enum {
@@ -136,3 +133,4 @@ AT45DB_RESULT at45db_init(at45db* dev);
 AT45DB_RESULT at45db_getid(at45db* dev);
 AT45DB_RESULT at45db_getstatus(at45db* dev);
 AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* txbuf, uint16_t pageAddr);
+
