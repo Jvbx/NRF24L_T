@@ -116,6 +116,11 @@ int main(void)
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 	at45db_init(&dataflash);
+	uint8_t at_tx[532] = {0};
+	for (int i = 0; i<256; i++) 
+		{
+		at45db_read_page(&dataflash,dataflash.config.rx_buffer,i);
+		}
 	HAL_TIM_Base_Start_IT(&htim14);
   nrf_startup(&nrf);
 	

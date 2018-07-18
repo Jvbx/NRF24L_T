@@ -13,8 +13,8 @@
 
 #define AT45DB_PAGE_SIZE   		528					//default. could be switched to 512
 #define AT45DB_PAGES   				4096				// at45db161 is 16Mbit chip.
-
-
+#define AT45DB_SPI_PORT				&hspi2			//spi port, what else can it be? )
+#define AT45DB_SPI_TIMEOUT		10					//ftgj!	
 
 
 /*#define 	AT45DB_CMD_SECTORPROTECTIONOFF   ((char []) {0x3D, 0x2A, 0x7F, 0xCF});
@@ -60,7 +60,8 @@ typedef enum {
 		AT45DB_CMD_R_MAINMEMTOBUF1			 = 0x53,
 		AT45DB_CMD_R_MAINMEMTOBUF2			 = 0x55,	
 		AT45DB_CMD_R_MAINMEMTOBUF1COMP   = 0x60,
-		AT45DB_CMD_R_MAINMEMTOBUF2COMP   = 0x61
+		AT45DB_CMD_R_MAINMEMTOBUF2COMP   = 0x61,
+		AT45DB_CMD_R_SECTORLOCKDOWN 		 = 0x35
 } AT45DB_COMMAND;
 
 typedef enum {
@@ -86,7 +87,11 @@ typedef struct {
     uint8_t* 						rx_buffer;
 		uint8_t* 						tx_buffer01;
 		uint8_t* 						tx_buffer02;
-		uint8_t 						devid[5];
+		
+  
+} at45db_config;
+
+typedef struct {
 
     SPI_HandleTypeDef* 	spi;
     uint32_t           	spi_timeout;
@@ -100,15 +105,28 @@ typedef struct {
     GPIO_TypeDef* 			rstn_port;
     uint16_t      			rstn_pin;
 
-} at45db_config;
+} at45db_hw_config;
 
+typedef struct {
+
+    
+					uint8_t 							statusreg;
+					uint8_t								lockstatus[16];
+  
+} at45db_registers;
 
 
 typedef struct {
-    at45db_config 				config;
-
-    volatile uint8_t      at45_busy;
-		uint16_t						curr_page;							
+					at45db_config 				config;
+					at45db_hw_config 			hw_config;
+					at45db_registers			registers;
+volatile 	uint8_t      					at45_busy;
+					uint16_t							curr_page;
+					uint16_t							curr_offset;
+					uint8_t 							devid[5];	
+					uint8_t								rxbuf[528];
+					uint16_t							pagesize;
+					uint8_t								chipsize;
 } at45db;
 
 
@@ -116,4 +134,5 @@ typedef struct {
 
 AT45DB_RESULT at45db_init(at45db* dev); 
 AT45DB_RESULT at45db_getid(at45db* dev);
-
+AT45DB_RESULT at45db_getstatus(at45db* dev);
+AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* txbuf, uint16_t pageAddr);
