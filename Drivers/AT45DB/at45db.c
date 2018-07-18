@@ -76,10 +76,15 @@ AT45DB_RESULT at45db_init(at45db* dev)
 		retryleft--;
 	}
   if (!retryleft) return AT45DB_ERROR;
+	
 	at45db_getstatus(dev); 
-	
-	
-	
+	at45db_getstatus(dev); 
+	at45db_sprot_read(dev);
+
+		for (uint16_t i = 0; i<4095; i++) 
+		{
+			at45db_read_page(dev, at45_txbuf_02, i);
+		}
 	
 	return AT45DB_OK;
 }
@@ -94,9 +99,9 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
 															uint16_t 				datalen, 
 															uint8_t 				cmdlen) 				//length of cmd sequence, including opcode, address and dummy bytes;  Set to 1 if adress is not used
 {
-    uint8_t 								myTX[datalen];
-    uint8_t 								myRX[datalen];
-		uint8_t 								cmdbuf[cmdlen];
+    uint8_t 								myTX[528];
+    uint8_t 								myRX[528];
+		uint8_t 								cmdbuf[8];
 		HAL_StatusTypeDef 			res;
 		uint16_t 								i;
 	
@@ -154,6 +159,7 @@ AT45DB_RESULT at45db_getstatus(at45db* dev)
 		at45_res = at45db_send_cmd(dev,AT45DB_CMD_STATUS,0,0,&dev->registers.statusreg,&dev->registers.statusreg,sizeof(dev->registers.statusreg),1);
 		if ((dev->registers.statusreg & AT45DB_RDY) != 0) {dev->at45_busy = 0;}
 		if ((dev->registers.statusreg & AT45DB_PAGESIZE)) dev->pagesize = 512; else dev->pagesize = 528;
+		dev->chipsize = ((dev->registers.statusreg & AT45DB_SIZE)>>2);
 		return at45_res;
 	}
 	
@@ -165,7 +171,7 @@ AT45DB_RESULT at45db_getsize(at45db* dev)
 	
 	AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* rxbuf, uint16_t pageAddr)	
 	{
-		return at45db_send_cmd(dev,AT45DB_CMD_R_MAINMEMPAGE,pageAddr,0,rxbuf,rxbuf,528,8);
+		return at45db_send_cmd(dev,AT45DB_CMD_R_CONTARRAY_HF,pageAddr,0,rxbuf,rxbuf,528,8);
 	}	
 	
 	

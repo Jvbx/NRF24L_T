@@ -18,9 +18,9 @@
 
 
 
-#define 	AT45DB_CMD_SECTORPROTECTIONOFF   ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xCF});
-#define 	AT45DB_CMD_SECTORPROTECTIONON    ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xFC});
-#define 	AT45DB_CMD_CHIPERASE  					 ((uint8_t []) {0xC7, 0x94, 0x80, 0x9A});
+#define 	AT45DB_CMD_SECTORPROTECTIONOFF   ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xCF})
+#define 	AT45DB_CMD_SECTORPROTECTIONON    ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xFC})
+#define 	AT45DB_CMD_CHIPERASE  					 ((uint8_t []) {0xC7, 0x94, 0x80, 0x9A})
 
 
 /* Registers */
@@ -132,5 +132,5 @@ volatile 	uint8_t      					at45_busy;
 AT45DB_RESULT at45db_init(at45db* dev); 
 AT45DB_RESULT at45db_getid(at45db* dev);
 AT45DB_RESULT at45db_getstatus(at45db* dev);
-AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* txbuf, uint16_t pageAddr);
-
+AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* rxbuf, uint16_t pageAddr);
+AT45DB_RESULT at45db_sprot_read(at45db* dev);
