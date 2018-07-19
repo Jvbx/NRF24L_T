@@ -70,7 +70,7 @@ AT45DB_RESULT at45db_init(at45db* dev)
 		dev->hw_config.spi_timeout 	= AT45DB_SPI_TIMEOUT;
 		uint8_t retryleft = 0xFF;			//counter to avoid deadloop if flash decided to go home. Normally only one cycle pass enough
 	
-	while ((dev->devid[0]!= 0x1F)&(!retryleft))
+	while ((dev->devid[0]!= 0x1F)&(retryleft))
 	{
 		at45db_getid(dev);
 		retryleft--;
@@ -80,6 +80,9 @@ AT45DB_RESULT at45db_init(at45db* dev)
 	at45db_getstatus(dev); 
 	at45db_getstatus(dev); 
 	at45db_sprot_read(dev);
+	at45db_sprot_disable(dev);
+	at45db_sprot_read(dev);
+	at45db_chiperase(dev);
 
 		for (uint16_t i = 0; i<4095; i++) 
 		{
@@ -102,26 +105,45 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
     uint8_t 								myTX[528];
     uint8_t 								myRX[528];
 		uint8_t 								cmdbuf[8];
+		uint8_t 								TX_Buffer[8];
 		HAL_StatusTypeDef 			res;
 		uint16_t 								i;
 	
 	
+	  uint32_t FlashRequest = 0;
+
+	
     cmdbuf[0] = cmd;																					//first goes the opcode
+		FlashRequest = FlashRequest + (cmd << 24);
+	  TX_Buffer[0] = ((FlashRequest & 0xFF000000) >> 24);
 				if (cmdlen>1) 																				//probably there is address needed. 
-						{																									//for 528 bytes pagesize address is transfered in form: 00PPPPPP PPPPPPBB BBBBBBBB
+						{																									
+							
+																															//Alkes style address forming
+								  
+									FlashRequest = FlashRequest + (page << 10);
+									FlashRequest = FlashRequest + byteoffset;
+		
+									TX_Buffer[0] = ((FlashRequest & 0xFF000000) >> 24);
+									TX_Buffer[1] = ((FlashRequest & 0xFF0000) >> 16);
+									TX_Buffer[2] = ((FlashRequest & 0xFF00) >> 8);
+									TX_Buffer[3] = FlashRequest;
+							
+							
+							
+																															//for 528 bytes pagesize address is transfered in form: 00PPPPPP PPPPPPBB BBBBBBBB
 																															//where P - page number bit, B bit of number of byte in page
 							
 																															// for 512 bytes/page chip address is transfered in form:
 																															// 000AAAAA AAAAAAAa aaaaaaaa
-																															// cmdbuf[1] = ((page >> 7) & 0x1F);					
-																															// cmdbuf[2] = ((page << 1) & 0xFE + (byteoffset>>8));
-																															// cmdbuf[3] =  byteoffset;
-							cmdbuf[1] = ((page >> 6) & 0x3F);
-							cmdbuf[2] = ((page << 2) & 0xFC + (byteoffset>>8));
-							cmdbuf[3] =  byteoffset;	
+																													
+							cmdbuf[1] = ((page >> 6) & 0x3F);										 // cmdbuf[1] = ((page >> 7) & 0x1F);	
+							cmdbuf[2] = ((page << 2) & 0xFC + (byteoffset>>8));  // cmdbuf[2] = ((page << 1) & 0xFE + (byteoffset>>8));
+							cmdbuf[3] =  byteoffset;														 // cmdbuf[3] =  byteoffset;
 							for (i = 4; i < cmdlen; i++) 
 									{
 									cmdbuf[i] = 0;
+									TX_Buffer[i] = 0;
 									}
 						}
 
@@ -133,7 +155,8 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
 				
     at45db_csn_reset(dev);
 
-    res =	 HAL_SPI_Transmit(dev->hw_config.spi, cmdbuf, cmdlen,dev->hw_config.spi_timeout);
+    //res =	 HAL_SPI_Transmit(dev->hw_config.spi, cmdbuf, cmdlen,dev->hw_config.spi_timeout);
+		  res =	 HAL_SPI_Transmit(dev->hw_config.spi, TX_Buffer, cmdlen,dev->hw_config.spi_timeout);
 		res &= HAL_SPI_TransmitReceive(dev->hw_config.spi, myTX, myRX, datalen,dev->hw_config.spi_timeout);
 		at45db_csn_set(dev);				
 				if (res != HAL_OK) 
@@ -141,7 +164,10 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
         return AT45DB_ERROR;
 			}
 
-    for (i = 0; i < datalen; i++) { rxbuf[i] = myRX[i]; }
+    for (i = 0; i < datalen; i++) 
+			{ 
+				rxbuf[i] = myRX[i]; 
+			}
 
     return AT45DB_OK;
 }
@@ -149,7 +175,7 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
 
 AT45DB_RESULT at45db_getid(at45db* dev) 
 	{		
-		return  at45db_send_cmd(dev,AT45DB_CMD_DEVID,0,0,NULL,dev->devid,sizeof(dev->devid),1);
+		return  at45db_send_cmd(dev,AT45DB_CMD_DEVID,0,0,dev->devid,dev->devid,sizeof(dev->devid),1);
 	}
 		
 AT45DB_RESULT at45db_getstatus(at45db* dev) 
@@ -171,7 +197,7 @@ AT45DB_RESULT at45db_getsize(at45db* dev)
 	
 	AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* rxbuf, uint16_t pageAddr)	
 	{
-		return at45db_send_cmd(dev,AT45DB_CMD_R_CONTARRAY_HF,pageAddr,0,rxbuf,rxbuf,528,8);
+		return at45db_send_cmd(dev,0x52,pageAddr,0,rxbuf,rxbuf,528,8);
 	}	
 	
 	
@@ -207,7 +233,26 @@ AT45DB_RESULT at45db_getsize(at45db* dev)
 	return at45_res; 
 	}	
 	
+	AT45DB_RESULT at45db_sprot_disable(at45db* dev) 					//sector protection erase
+	{
+		HAL_StatusTypeDef res;
+		AT45DB_RESULT 		at45_res = AT45DB_OK;
+		uint8_t 					*cmdbuf = AT45DB_CMD_SECTORPROTECTIONDISABLE;
+		
+		at45db_csn_reset(dev);
+    res =	 HAL_SPI_Transmit(dev->hw_config.spi, cmdbuf, 4, dev->hw_config.spi_timeout);
+		at45db_csn_set(dev);
+		if (res != HAL_OK) return AT45DB_ERROR;
+		do 
+			{
+			at45_res = at45db_getstatus(dev);
+			} 				//waiting for ready bit
+		while ((dev->at45_busy)&&(at45_res == AT45DB_OK));
 	
+	
+	
+	return at45_res; 
+	}		
 	
 	AT45DB_RESULT at45db_sprot_program(at45db* dev) 					//sector protection register. byte 0 - sector 0, byte 15 - sector 15. 
 																																										//0xFF - protection enabled, 0x00 - disabled
@@ -235,3 +280,21 @@ AT45DB_RESULT at45db_getsize(at45db* dev)
 	}
 	
 
+	AT45DB_RESULT at45db_chiperase(at45db* dev) 					//chip erase
+	{
+		HAL_StatusTypeDef res;
+		AT45DB_RESULT 		at45_res = AT45DB_OK;
+		uint8_t 					*cmdbuf = AT45DB_CMD_CHIPERASE;
+		
+		at45db_csn_reset(dev);
+    res =	 HAL_SPI_Transmit(dev->hw_config.spi, cmdbuf, 4, dev->hw_config.spi_timeout);
+		at45db_csn_set(dev);
+		if (res != HAL_OK) return AT45DB_ERROR;
+		do 
+			{
+			at45_res = at45db_getstatus(dev);
+			} 				//waiting for ready bit
+		while ((dev->at45_busy)&&(at45_res == AT45DB_OK));
+			
+	return at45_res; 
+	}

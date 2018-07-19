@@ -14,13 +14,14 @@
 #define AT45DB_PAGE_SIZE   		528					//default. could be switched to 512
 #define AT45DB_PAGES   				4096				// at45db161 is 16Mbit chip.
 #define AT45DB_SPI_PORT				&hspi2			//spi port, what else can it be? )
-#define AT45DB_SPI_TIMEOUT		10					//ftgj!	
+#define AT45DB_SPI_TIMEOUT		1000					//ftgj!	
 
 
 
-#define 	AT45DB_CMD_SECTORPROTECTIONOFF   ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xCF})
-#define 	AT45DB_CMD_SECTORPROTECTIONON    ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xFC})
-#define 	AT45DB_CMD_CHIPERASE  					 ((uint8_t []) {0xC7, 0x94, 0x80, 0x9A})
+#define 	AT45DB_CMD_SECTORPROTECTIONOFF  		 ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xCF})
+#define 	AT45DB_CMD_SECTORPROTECTIONDISABLE   ((uint8_t []) {0x3D, 0x2A, 0x7F, 0x9A})
+#define 	AT45DB_CMD_SECTORPROTECTIONON    		 ((uint8_t []) {0x3D, 0x2A, 0x7F, 0xFC})
+#define 	AT45DB_CMD_CHIPERASE  							 ((uint8_t []) {0xC7, 0x94, 0x80, 0x9A})
 
 
 /* Registers */
@@ -58,7 +59,15 @@ typedef enum {
 		AT45DB_CMD_R_MAINMEMTOBUF1COMP   = 0x60,
 		AT45DB_CMD_R_MAINMEMTOBUF2COMP   = 0x61,
 		AT45DB_CMD_R_SECTORLOCKDOWN 		 = 0x35,
-		AT45DB_CMD_R_SECTORPROTECTION		 = 0x32
+		AT45DB_CMD_R_SECTORPROTECTION		 = 0x32,
+		AT45DB_CMD_R_MAINMEMPAGE_LEGACY	 = 0x52,
+		AT45DB_CMD_R_BUFF1_LEGACY				 = 0x54,
+		AT45DB_CMD_R_BUFF2_LEGACY				 = 0x56,
+		AT45DB_CMD_R_CONTARRAY_LEGACY_D	 = 0x68,
+		AT45DB_CMD_STATUS_LEGACY 				 = 0x57,
+		
+		
+		
 } AT45DB_COMMAND;
 
 typedef enum {
@@ -134,3 +143,6 @@ AT45DB_RESULT at45db_getid(at45db* dev);
 AT45DB_RESULT at45db_getstatus(at45db* dev);
 AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* rxbuf, uint16_t pageAddr);
 AT45DB_RESULT at45db_sprot_read(at45db* dev);
+AT45DB_RESULT at45db_sprot_disable(at45db* dev);
+AT45DB_RESULT at45db_chiperase(at45db* dev);
+
