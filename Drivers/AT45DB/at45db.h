@@ -4,17 +4,17 @@
 #include <stdint.h>
 #include "spi.h"
 
-#if defined STM32F100xB
-#include "stm32f1xx_hal.h"
-#elif defined STM32F407xx
+//#if defined STM32F100xB
+//#include "stm32f1xx_hal.h"
+//#elif defined STM32F407xx
 #include "stm32f4xx_hal.h"
-#endif
+//#endif
 
 
 #define AT45DB_PAGE_SIZE   		528					//default. could be switched to 512
 #define AT45DB_PAGES   				4096				// at45db161 is 16Mbit chip.
 #define AT45DB_SPI_PORT				&hspi2			//spi port, what else can it be? )
-#define AT45DB_SPI_TIMEOUT		1000					//ftgj!	
+#define AT45DB_SPI_TIMEOUT		1000				//ftgj!	
 
 
 
@@ -117,7 +117,8 @@ typedef struct {
 
     
 					uint8_t 							statusreg;
-					uint8_t								lockstatus[16];
+					uint8_t								lockreg[16];
+					uint8_t								securityreg[16];
   
 } at45db_registers;
 
@@ -130,8 +131,9 @@ volatile 	uint8_t      					at45_busy;
 					uint16_t							curr_page;
 					uint16_t							curr_offset;
 					uint8_t 							devid[5];	
-					uint8_t								rxbuf[528];
+					uint8_t								rtxbuf[528];
 					uint16_t							pagesize;
+					uint8_t								addrshift;
 					uint8_t								chipsize;
 } at45db;
 
@@ -144,5 +146,6 @@ AT45DB_RESULT at45db_getstatus(at45db* dev);
 AT45DB_RESULT at45db_read_page(at45db* dev, uint8_t* rxbuf, uint16_t pageAddr);
 AT45DB_RESULT at45db_sprot_read(at45db* dev);
 AT45DB_RESULT at45db_sprot_disable(at45db* dev);
+AT45DB_RESULT at45db_sprot_erase(at45db* dev); 			
 AT45DB_RESULT at45db_chiperase(at45db* dev);
 
