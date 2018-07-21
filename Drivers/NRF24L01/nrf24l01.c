@@ -138,10 +138,7 @@ NRF_RESULT nrf_send_command(nrf24l01* dev, NRF_COMMAND cmd, const uint8_t* tx,
 
     csn_reset(dev);
 
-    if (HAL_SPI_TransmitReceive(dev->config.spi, myTX, myRX, 1 + len,
-                                dev->config.spi_timeout) != HAL_OK) {
-        return NRF_ERROR;
-    }
+    if (HAL_SPI_TransmitReceive(dev->config.spi, myTX, myRX, 1 + len, dev->config.spi_timeout) != HAL_OK) { return NRF_ERROR; }
 
     for (i = 0; i < len; i++) { rx[i] = myRX[1 + i]; }
 

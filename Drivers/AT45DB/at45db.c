@@ -100,7 +100,8 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
 																																Page and byteoffset should be set to 0 in that case. */
 {
 		uint16_t 								i;
-		uint8_t 								cmdbuf[8];
+    uint8_t                 tempbuf[datalen];
+		uint8_t 								cmdbuf[cmdlen];
 		HAL_StatusTypeDef 			res;	
 	  uint32_t 								FlashRequest = 0;
 		AT45DB_DATA_DIRECTION   datadir;
@@ -128,8 +129,8 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
 						}
    if(datadir == AT45DB_W) 
 		 {	 
-				for (i = 0; i < datalen; i++)	{ dev->rtxbuf[i] = txbuf[i]; }		
-				for (i = datalen; i < dev->pagesize; i++)	{	dev->rtxbuf[i] = 0;	}
+				for (i = 0; i < datalen; i++)	{ tempbuf[i] = txbuf[i]; }		
+				for (i = datalen; i < dev->pagesize; i++)	{ tempbuf[i] = 0;	}
 		 }
 								
 				
@@ -137,9 +138,9 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
     at45db_csn_reset(dev);
 
     res =	 HAL_SPI_Transmit(dev->hw_config.spi, cmdbuf, cmdlen, dev->hw_config.spi_timeout);
-		if(datadir == AT45DB_W) {res &= HAL_SPI_Transmit(dev->hw_config.spi, dev->rtxbuf, datalen,dev->hw_config.spi_timeout);} else
-		if(datadir == AT45DB_R) {res &= HAL_SPI_Receive(dev->hw_config.spi,  dev->rtxbuf, datalen,dev->hw_config.spi_timeout);} else
-		{res &= HAL_SPI_TransmitReceive(dev->hw_config.spi, dev->rtxbuf, dev->rtxbuf, datalen,dev->hw_config.spi_timeout);}
+		if(datadir == AT45DB_W) {res &= HAL_SPI_Transmit(dev->hw_config.spi, tempbuf, datalen,dev->hw_config.spi_timeout);} else
+		if(datadir == AT45DB_R) {res &= HAL_SPI_Receive(dev->hw_config.spi,  tempbuf, datalen,dev->hw_config.spi_timeout);} else
+		{res &= HAL_SPI_TransmitReceive(dev->hw_config.spi, tempbuf, tempbuf, datalen,dev->hw_config.spi_timeout);}
 		at45db_csn_set(dev);				
 				if (res != HAL_OK) 
 			{
@@ -149,7 +150,7 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
     
 		if (datadir != AT45DB_W)	
 			{
-				for (i = 0; i < datalen; i++) {rxbuf[i] = dev->rtxbuf[i]; } // if not only writing data, then we need to return what we read
+				for (i = 0; i < datalen; i++) {rxbuf[i] = tempbuf[i];}  // if not only writing data, then we need to return what we read
 			}
 
     return AT45DB_OK;
@@ -158,7 +159,7 @@ AT45DB_RESULT at45db_send_cmd(at45db* 				dev,
 
 AT45DB_RESULT at45db_getid(at45db* dev) 
 	{		
-		return  at45db_send_cmd(dev, AT45DB_CMD_DEVID, 0, 0, dev->devid, dev->devid, sizeof(dev->devid), 1);
+		return  at45db_send_cmd(dev, AT45DB_CMD_DEVID, 0, 0, NULL, dev->devid, sizeof(dev->devid), 1);
 	}
 		
 AT45DB_RESULT at45db_getstatus(at45db* dev) 

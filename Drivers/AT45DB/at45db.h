@@ -11,7 +11,7 @@
 //#endif
 
 
-#define AT45DB_PAGE_SIZE   		528					//default. could be switched to 512
+#define AT45DB_PAGE_SIZE   		528					//default. could be switched to 512. Obsolete parameter cause pagesize now determines from pagesize bit in status register
 #define AT45DB_PAGES   				4096				// at45db161 is 16Mbit chip.
 #define AT45DB_SPI_PORT				&hspi2			//spi port, what else can it be? )
 #define AT45DB_SPI_TIMEOUT		1000				//ftgj!	
@@ -80,9 +80,7 @@ typedef enum {
 
 
 
-//typedef enum { NRF_CRC_WIDTH_1B = 0, NRF_CRC_WIDTH_2B = 1 } NRF_CRC_WIDTH;
 
-//typedef enum { NRF_STATE_RX = 1, NRF_STATE_TX = 0 } NRF_TXRX_STATE;
 
 
 typedef enum { AT45DB_OK, AT45DB_ERROR, AT45DB_INVALID_ARGUMENT, AT45DB_READY, AT45DB_BUSY } AT45DB_RESULT;
