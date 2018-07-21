@@ -85,7 +85,8 @@ typedef enum {
 //typedef enum { NRF_STATE_RX = 1, NRF_STATE_TX = 0 } NRF_TXRX_STATE;
 
 
-typedef enum { AT45DB_OK, AT45DB_ERROR, AT45DB_INVALID_ARGUMENT } AT45DB_RESULT;
+typedef enum { AT45DB_OK, AT45DB_ERROR, AT45DB_INVALID_ARGUMENT, AT45DB_READY, AT45DB_BUSY } AT45DB_RESULT;
+typedef enum { AT45DB_R, AT45DB_W, AT45DB_RW } AT45DB_DATA_DIRECTION;
 
 typedef struct {
 
@@ -148,4 +149,6 @@ AT45DB_RESULT at45db_sprot_read(at45db* dev);
 AT45DB_RESULT at45db_sprot_disable(at45db* dev);
 AT45DB_RESULT at45db_sprot_erase(at45db* dev); 			
 AT45DB_RESULT at45db_chiperase(at45db* dev);
-
+AT45DB_RESULT at45db_w_pagethroughbuf1(at45db* dev, uint8_t* txbuf, uint16_t pageAddr, uint16_t byteAddr);
+AT45DB_RESULT at45db_w_pagethroughbuf2(at45db* dev, uint8_t* txbuf, uint16_t pageAddr, uint16_t byteAddr);
+AT45DB_RESULT at45db_isrdy(at45db* dev);
