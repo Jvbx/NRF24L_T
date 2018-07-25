@@ -56,8 +56,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-nrf24l01 	nrf;
-at45db 		dataflash;
+nrf24l01  nrf;
+at45db   dataflash;
 
 char rxbuf = 0;
 
@@ -86,7 +86,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	
+ 
 
   /* USER CODE END 1 */
 
@@ -115,35 +115,35 @@ int main(void)
   MX_SPI2_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-	at45db_init(&dataflash);
-	uint8_t at_tx[532] = {0};
+ at45db_init(&dataflash);
+ uint8_t at_tx[532] = {0};
 
-	HAL_TIM_Base_Start_IT(&htim14);
+ HAL_TIM_Base_Start_IT(&htim14);
   nrf_startup(&nrf);
-	
-	
-	//char tx_data1[16] = {0};
-	
-	uint8_t tx_data[16] = {0};
-	//sprintf((char *)tx_data, "abcdefghijklmnoszxABCDEFCBDA");
-	HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxbuf, 1);	
+ 
+ 
+ //char tx_data1[16] = {0};
+ 
+ uint8_t tx_data[16] = {0};
+ //sprintf((char *)tx_data, "abcdefghijklmnoszxABCDEFCBDA");
+ HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxbuf, 1); 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	
-	while (!DataDone)
-	{
-	}		
-	sprintf((char *)tx_data, (char *)&SLatitude);	
-	//printf("data = 0x%04X\r\n",(char *)tx_data);	
-	nrf_send_packet(&nrf,tx_data);
-	
-	sprintf((char *)tx_data, (char *)&SLongitude);
-	nrf_send_packet(&nrf,tx_data);
-	//HAL_Delay(250);
+ 
+ while (!DataDone)
+ {
+ }  
+ sprintf((char *)tx_data, (char *)&SLatitude); 
+ //printf("data = 0x%04X\r\n",(char *)tx_data); 
+ nrf_send_packet(&nrf,tx_data);
+ 
+ sprintf((char *)tx_data, (char *)&SLongitude);
+ nrf_send_packet(&nrf,tx_data);
+ //HAL_Delay(250);
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -215,8 +215,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 {
 
-	if(GPIO_Pin== NRF_IRQ_Pin)
-		{
+ if(GPIO_Pin== NRF_IRQ_Pin)
+  {
 
     nrf_irq_handler(&nrf);
   } else{
@@ -230,20 +230,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
-	
-	
-	HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxbuf, 1);
-	
-	nmea_getmessage((uint8_t*)&rxbuf);		
-	NMEA_Parser(rxbuf);
-	 
+ 
+ 
+ HAL_UART_Receive_IT(&huart3, (uint8_t*)&rxbuf, 1);
+ 
+ nmea_getmessage((uint8_t*)&rxbuf);  
+ NMEA_Parser(rxbuf);
+  
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 {
-	nrf24_timeout = 1;
-	HAL_TIM_Base_MspDeInit(&htim14);
+ nrf24_timeout = 1;
+ HAL_TIM_Base_MspDeInit(&htim14);
  
 }
 /* USER CODE END 4 */

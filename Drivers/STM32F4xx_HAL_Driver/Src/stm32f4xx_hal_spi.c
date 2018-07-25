@@ -3016,12 +3016,12 @@ static void SPI_CloseRxTx_ISR(SPI_HandleTypeDef *hspi)
     {
       if(hspi->State == HAL_SPI_STATE_BUSY_RX)
       {
-      	hspi->State = HAL_SPI_STATE_READY;
+       hspi->State = HAL_SPI_STATE_READY;
         HAL_SPI_RxCpltCallback(hspi);
       }
       else
       {
-      	hspi->State = HAL_SPI_STATE_READY;
+       hspi->State = HAL_SPI_STATE_READY;
         HAL_SPI_TxRxCpltCallback(hspi);
       }
     }

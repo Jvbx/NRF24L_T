@@ -25,86 +25,86 @@ static void csn_reset(nrf24l01* dev) {
 NRF_RESULT nrf_startup(nrf24l01* dev) 
 {
 
-nrf24l01_config config;			
-	   
-				config.data_rate        = NRF_DATARATE;
+nrf24l01_config config;   
+    
+    config.data_rate        = NRF_DATARATE;
         config.tx_power         = NRF_TXPOWER;
         config.crc_width        = NRF_CRC_WITH;
         config.addr_width       = NRF_ADR_WITH;
-			
+   
         config.payload_length   = NRF_PAYLOADLEN;    // maximum is 32 bytes
         config.retransmit_count = NRF_RETRANSCOUNT;   // maximum is 15 times
         config.retransmit_delay = NRF_RETRANSDELAY; // 4000us, LSB:250us
-	
+ 
         config.rf_channel       = NRF_CHANNEL;
         config.rx_address       = rx_address;
         config.tx_address       = tx_address;
         config.rx_buffer        = (uint8_t*)&rx_data;
 
-	
-#if 	defined STM32F100xB
-				config.spi         = &hspi1;
+ 
+#if  defined STM32F100xB
+    config.spi         = &hspi1;
 #elif defined STM32F407xx
-				config.spi         = &hspi3;
+    config.spi         = &hspi3;
 #endif
 
         config.spi_timeout = 10; // milliseconds
         config.ce_port     = NRF_CE_GPIO_Port;
         config.ce_pin      = NRF_CE_Pin;
-				config.csn_port    = NRF_CSN_GPIO_Port;
+    config.csn_port    = NRF_CSN_GPIO_Port;
         config.csn_pin     = NRF_CSN_Pin;
         config.irq_port    = NRF_IRQ_GPIO_Port;
         config.irq_pin     = NRF_IRQ_Pin;
-				return nrf_init(dev, &config);
+    return nrf_init(dev, &config);
 }
 
 
 NRF_RESULT nrf_init(nrf24l01* dev, nrf24l01_config* config) {
-	
-	
+ 
+ 
     dev->config = *config;
 
     ce_reset(dev);
     csn_set(dev);
 
     nrf_power_up(dev, true);
-		uint8_t config_reg = 0;
-		uint8_t retryleft = 0xFF;			//counter to avoid deadloop if ic decided to go home. Normally only one cycle pass enough
+  uint8_t config_reg = 0;
+  uint8_t retryleft = 0xFF;   //counter to avoid deadloop if ic decided to go home. Normally only one cycle pass enough
 
-    do 	{
-					nrf_read_register(dev, NRF_CONFIG, &config_reg);
-					retryleft--;
-					//if (nrf24_timeout) {return NRF_ERROR;}
-				} 
-		while (((config_reg & 2) == 0) & retryleft);  // wait for powerup
-		
-		nrf_enable_crc(dev, 1);
+    do  {
+     nrf_read_register(dev, NRF_CONFIG, &config_reg);
+     retryleft--;
+     //if (nrf24_timeout) {return NRF_ERROR;}
+    } 
+  while (((config_reg & 2) == 0) & retryleft);  // wait for powerup
+  
+  nrf_enable_crc(dev, 1);
     nrf_set_crc_width(dev, dev->config.crc_width);
 
-		nrf_enable_auto_ack(dev, 0);	//enable pipe0 autoACK
-		nrf_enable_auto_ack(dev, 1);	//enable pipe1 autoACK
-		nrf_set_rx_pipes(dev, 0x03);  //enable pipe0 and pipe1
-		
-		
-		nrf_set_address_width(dev, dev->config.addr_width);
-		nrf_set_retransmittion_count(dev, dev->config.retransmit_count);
+  nrf_enable_auto_ack(dev, 0); //enable pipe0 autoACK
+  nrf_enable_auto_ack(dev, 1); //enable pipe1 autoACK
+  nrf_set_rx_pipes(dev, 0x03);  //enable pipe0 and pipe1
+  
+  
+  nrf_set_address_width(dev, dev->config.addr_width);
+  nrf_set_retransmittion_count(dev, dev->config.retransmit_count);
     nrf_set_retransmittion_delay(dev, dev->config.retransmit_delay);
-		//nrf_togglefeatures(dev);
-		//nrf_write_register(dev, NRF_FEATURE, 0);
-		//nrf_write_register(dev, NRF_DYNPD, 0);
-		
-		nrf_clear_interrupts(dev);
-		
-		
-		nrf_set_rf_channel(dev, dev->config.rf_channel);
-		nrf_set_data_rate(dev, dev->config.data_rate);    
-		nrf_set_tx_power(dev, dev->config.tx_power);
-		
-		nrf_set_tx_address(dev, dev->config.tx_address);
+  //nrf_togglefeatures(dev);
+  //nrf_write_register(dev, NRF_FEATURE, 0);
+  //nrf_write_register(dev, NRF_DYNPD, 0);
+  
+  nrf_clear_interrupts(dev);
+  
+  
+  nrf_set_rf_channel(dev, dev->config.rf_channel);
+  nrf_set_data_rate(dev, dev->config.data_rate);    
+  nrf_set_tx_power(dev, dev->config.tx_power);
+  
+  nrf_set_tx_address(dev, dev->config.tx_address);
     nrf_set_rx_address_p0(dev, dev->config.tx_address);
-		nrf_set_rx_address_p1(dev, dev->config.rx_address);
+  nrf_set_rx_address_p1(dev, dev->config.rx_address);
     
-			
+   
     nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
     nrf_set_rx_payload_width_p1(dev, dev->config.payload_length);
 
@@ -112,11 +112,11 @@ NRF_RESULT nrf_init(nrf24l01* dev, nrf24l01_config* config) {
     nrf_enable_rx_data_ready_irq(dev, 1);
     nrf_enable_tx_data_sent_irq(dev, 1);
     nrf_enable_max_retransmit_irq(dev, 1);
-		
+  
     nrf_flush_rx(dev);
-		nrf_flush_tx(dev);
-		nrf_rx_tx_control(dev, NRF_STATE_RX);
-		HAL_Delay(140);
+  nrf_flush_tx(dev);
+  nrf_rx_tx_control(dev, NRF_STATE_RX);
+  HAL_Delay(140);
     ce_set(dev);
 
     return NRF_OK;
@@ -489,10 +489,10 @@ NRF_RESULT nrf_rx_tx_control(nrf24l01* dev, NRF_TXRX_STATE rx) {
 
     if (rx) {
         reg |= 1; 
-				dev->state=NRF_STATE_RX;
+    dev->state=NRF_STATE_RX;
     } else {
         reg &= ~(1);
-				dev->state=NRF_STATE_TX;
+    dev->state=NRF_STATE_TX;
     }
 
     if (nrf_write_register(dev, NRF_CONFIG, &reg) != NRF_OK) {
@@ -554,9 +554,9 @@ NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01* dev, bool activate) {
 NRF_RESULT nrf_set_rx_address_p0(nrf24l01* dev, const uint8_t* address) {
     uint8_t rx[5];
     if (nrf_send_command(dev, NRF_CMD_W_REGISTER | NRF_RX_ADDR_P0, address, rx, 5) != NRF_OK) 
-			{
+   {
         return NRF_ERROR;
-			}
+   }
     dev->config.rx_address = address;
     return NRF_OK;
 }
@@ -609,9 +609,9 @@ NRF_RESULT nrf_send_packet(nrf24l01* dev, const uint8_t* data) {
     nrf_rx_tx_control(dev, NRF_STATE_TX);
     nrf_write_tx_payload(dev, data);
     ce_set(dev);
-		HAL_Delay(15);
-	  ce_reset(dev);
-	
+  HAL_Delay(15);
+   ce_reset(dev);
+ 
     while (dev->tx_busy == 1) {} // wait for end of transmittion
 
     return dev->tx_result;

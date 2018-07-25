@@ -25,14 +25,14 @@ extern unsigned char GLONAS_COUNT;
 extern unsigned char GPS_COUNT;
 extern volatile char DataDone;
 extern unsigned char DataValid;
-	 
-	 
+  
+  
 void NMEA_Parser(unsigned char data);
-	 
-	 
-	 
+  
+  
+  
 #ifdef __cplusplus
 }
-#endif	 
+#endif  
 #endif /* __NMEA_H__ */
 

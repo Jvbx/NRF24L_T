@@ -28,7 +28,7 @@ unsigned char GLONAS_COUNT=0;
 unsigned char GPS_COUNT=0;
 volatile char DataDone=0;
 unsigned char DataValid=0;
-uint8_t i = 0;	
+uint8_t i = 0; 
 static uint8_t accum[255];
 
 
@@ -48,9 +48,9 @@ accum[i] = data;
 i++;
 if (i>=255) 
 {i = 0;}
-	//return;
-	
-	
+ //return;
+ 
+ 
 if(data=='$'){ByteCount=0;ComaPoint=0xff;MsgTxt=(char*)&MsgType; DataDone=0;return;} //ждем начала стрки
 if(ByteCount==0xff) return;                                                                     //
 ByteCount++;
