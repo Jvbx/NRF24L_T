@@ -69,17 +69,16 @@ NRF_RESULT nrf_init(nrf24l01* dev, nrf24l01_config* config) {
 
     nrf_power_up(dev, true);
   uint8_t config_reg = 0;
-  uint8_t retryleft = 0xFF;   //counter to avoid deadloop if ic decided to go home. Normally only one cycle pass enough
+  uint16_t retryleft = 0xFF;   //counter to avoid deadloop if ic decided to go home. Normally only one cycle pass enough
 
-    do  {
-     nrf_read_register(dev, NRF_CONFIG, &config_reg);
-     retryleft--;
-     //if (nrf24_timeout) {return NRF_ERROR;}
-    } 
-  while (((config_reg & 2) == 0) & retryleft);  // wait for powerup
-  
+  do {
+      nrf_read_register(dev, NRF_CONFIG, &config_reg);
+      if (retryleft--) {return NRF_ERROR;}
+     } while ((config_reg & 2) == 0);  // wait for powerup
+    
+    
   nrf_enable_crc(dev, 1);
-    nrf_set_crc_width(dev, dev->config.crc_width);
+  nrf_set_crc_width(dev, dev->config.crc_width);
 
   nrf_enable_auto_ack(dev, 0); //enable pipe0 autoACK
   nrf_enable_auto_ack(dev, 1); //enable pipe1 autoACK

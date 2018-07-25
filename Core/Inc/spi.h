@@ -48,7 +48,7 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+extern SPI_HandleTypeDef hspi1;
 /* USER CODE END Includes */
 
 extern SPI_HandleTypeDef hspi2;

@@ -43,7 +43,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
-
+SPI_HandleTypeDef hspi1;
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi2;
