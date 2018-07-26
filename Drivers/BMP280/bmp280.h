@@ -57,6 +57,12 @@ extern "C"
 {
 #endif
 
+  int8_t  BMP280_Config_and_run(struct bmp280_dev *dev);
+  
+  
+  
+  
+  
 /*!
  * @brief This API reads the data from the given register address of the
  * sensor.

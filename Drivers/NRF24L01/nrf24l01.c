@@ -51,7 +51,7 @@ nrf24l01_config config;
         config.spi_timeout = 10; // milliseconds
         config.ce_port     = NRF_CE_GPIO_Port;
         config.ce_pin      = NRF_CE_Pin;
-    config.csn_port    = NRF_CSN_GPIO_Port;
+        config.csn_port    = NRF_CSN_GPIO_Port;
         config.csn_pin     = NRF_CSN_Pin;
         config.irq_port    = NRF_IRQ_GPIO_Port;
         config.irq_pin     = NRF_IRQ_Pin;

@@ -44,7 +44,7 @@ AT45DB_RESULT at45db_init(at45db* dev)
   dev->hw_config.csn_pin    = AT45_CSN_Pin;
   dev->hw_config.csn_port   = AT45_CSN_GPIO_Port;
   dev->hw_config.rstn_pin   = AT45_RESET_Pin;
-  dev->hw_config.rstn_port   = AT45_RESET_GPIO_Port; 
+  dev->hw_config.rstn_port  = AT45_RESET_GPIO_Port; 
   dev->hw_config.wpn_pin    = AT45_WP_Pin;
   dev->hw_config.wpn_port   = AT45_WP_GPIO_Port;
  

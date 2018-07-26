@@ -51,6 +51,7 @@
 #include "nmea_parser.h"
 #include "gnss_utils.h"
 #include "at45db.h"
+#include "bmp280.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -58,7 +59,7 @@
 /* USER CODE BEGIN PV */
 nrf24l01  nrf;
 at45db   dataflash;
-
+struct bmp280_dev bmp280;
 char rxbuf = 0;
 
 
@@ -117,11 +118,46 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
  at45db_init(&dataflash);
- uint8_t at_tx[532] = {0};
+ BMP280_Config_and_run(&bmp280);
 
+
+
+
+
+ 
+ struct bmp280_uncomp_data ucomp_data;
+uint8_t meas_dur = bmp280_compute_meas_time(&bmp280);
+int8_t rslt;
+printf("Measurement duration: %dms\r\n", meas_dur);
+
+/* Loop to read out 10 samples of data */ 
+for (uint8_t i = 0; (i < 10) && (rslt == BMP280_OK); i++) {
+    bmp280.delay_ms(meas_dur); /* Measurement time */
+
+    rslt = bmp280_get_uncomp_data(&ucomp_data, &bmp280);
+    /* Check if rslt == BMP280_OK, if not, then handle accordingly */
+
+    int32_t temp32 = bmp280_comp_temp_32bit(ucomp_data.uncomp_temp, &bmp280);
+    uint32_t pres32 = bmp280_comp_pres_32bit(ucomp_data.uncomp_press, &bmp280);
+    uint32_t pres64 = bmp280_comp_pres_64bit(ucomp_data.uncomp_press, &bmp280);
+    double temp = bmp280_comp_temp_double(ucomp_data.uncomp_temp, &bmp280);
+    double pres = bmp280_comp_pres_double(ucomp_data.uncomp_press, &bmp280);
+
+    printf("UT: %d, UP: %d, T32: %d, P32: %d, P64: %d, P64N: %d, T: %f, P: %f\r\n", \
+      ucomp_data.uncomp_temp, ucomp_data.uncomp_press, temp32, \
+      pres32, pres64, pres64 / 256, temp, pres);
+
+    //bmp280.delay_ms(1000); /* Sleep time between measurements = BMP280_ODR_1000_MS */
+}
+ 
+ 
+ 
+ 
  HAL_TIM_Base_Start_IT(&htim14);
   nrf_startup(&nrf);
  
+ 
+
  
  //char tx_data1[16] = {0};
  

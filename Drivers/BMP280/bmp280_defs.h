@@ -65,7 +65,7 @@ extern "C"
 #include <stdint.h>
 #include <stddef.h>
 #endif
-
+#include "gpio.h"
 /****************************************************************/
 /*! @name        Common macros                */
 /****************************************************************/
@@ -122,24 +122,28 @@ extern "C"
 #define BMP280_SPI_INTF    UINT8_C(0)
 #define BMP280_I2C_INTF    UINT8_C(1)
 
+#define BMP280_SPI_PORT      &hspi1  
+
+
+
 /*! @name Return codes */
 /*! @name Success code*/
-#define BMP280_OK            INT8_C(0)
+#define BMP280_OK                INT8_C(0)
 /*! @name Error codes */
-#define BMP280_E_NULL_PTR        INT8_C(-1)
-#define BMP280_E_DEV_NOT_FOUND        INT8_C(-2)
+#define BMP280_E_NULL_PTR           INT8_C(-1)
+#define BMP280_E_DEV_NOT_FOUND      INT8_C(-2)
 #define BMP280_E_INVALID_LEN        INT8_C(-3)
-#define BMP280_E_COMM_FAIL        INT8_C(-4)
-#define BMP280_E_INVALID_MODE        INT8_C(-5)
+#define BMP280_E_COMM_FAIL          INT8_C(-4)
+#define BMP280_E_INVALID_MODE       INT8_C(-5)
 
 /*! @name Chip IDs */
-#define BMP280_CHIP_ID1    UINT8_C(0x56)
-#define BMP280_CHIP_ID2    UINT8_C(0x57)
-#define BMP280_CHIP_ID3    UINT8_C(0x58)
+#define BMP280_CHIP_ID1            UINT8_C(0x56)
+#define BMP280_CHIP_ID2            UINT8_C(0x57)
+#define BMP280_CHIP_ID3            UINT8_C(0x58)
 
 /*! @name I2C addresses */
 #define BMP280_I2C_ADDR_PRIM    UINT8_C(0x76)
-#define BMP280_I2C_ADDR_SEC    UINT8_C(0x77)
+#define BMP280_I2C_ADDR_SEC     UINT8_C(0x77)
 
 /*! @name Register addresses */
 /*! @name Calibration parameter registers */
@@ -169,20 +173,20 @@ extern "C"
 #define BMP280_DIG_P9_MSB_ADDR    UINT8_C(0x9F)
 
 /*! @name Other registers */
-#define BMP280_CHIP_ID_ADDR    UINT8_C(0xD0)
-#define BMP280_SOFT_RESET_ADDR        UINT8_C(0xE0)
-#define BMP280_STATUS_ADDR    UINT8_C(0xF3)
+#define BMP280_CHIP_ID_ADDR      UINT8_C(0xD0)
+#define BMP280_SOFT_RESET_ADDR   UINT8_C(0xE0)
+#define BMP280_STATUS_ADDR       UINT8_C(0xF3)
 #define BMP280_CTRL_MEAS_ADDR    UINT8_C(0xF4)
-#define BMP280_CONFIG_ADDR    UINT8_C(0xF5)
-#define BMP280_PRES_MSB_ADDR    UINT8_C(0xF7)
-#define BMP280_PRES_LSB_ADDR    UINT8_C(0xF8)
+#define BMP280_CONFIG_ADDR       UINT8_C(0xF5)
+#define BMP280_PRES_MSB_ADDR     UINT8_C(0xF7)
+#define BMP280_PRES_LSB_ADDR     UINT8_C(0xF8)
 #define BMP280_PRES_XLSB_ADDR    UINT8_C(0xF9)
-#define BMP280_TEMP_MSB_ADDR    UINT8_C(0xFA)
-#define BMP280_TEMP_LSB_ADDR    UINT8_C(0xFB)
+#define BMP280_TEMP_MSB_ADDR     UINT8_C(0xFA)
+#define BMP280_TEMP_LSB_ADDR     UINT8_C(0xFB)
 #define BMP280_TEMP_XLSB_ADDR    UINT8_C(0xFC)
 
 /*! @name Power modes */
-#define BMP280_SLEEP_MODE    UINT8_C(0x00)
+#define BMP280_SLEEP_MODE     UINT8_C(0x00)
 #define BMP280_FORCED_MODE    UINT8_C(0x01)
 #define BMP280_NORMAL_MODE    UINT8_C(0x03)
 
@@ -190,59 +194,59 @@ extern "C"
 #define BMP280_SOFT_RESET_CMD    UINT8_C(0xB6)
 
 /*! @name ODR options */
-#define BMP280_ODR_0_5_MS    UINT8_C(0x00)
+#define BMP280_ODR_0_5_MS     UINT8_C(0x00)
 #define BMP280_ODR_62_5_MS    UINT8_C(0x01)
-#define BMP280_ODR_125_MS    UINT8_C(0x02)
-#define BMP280_ODR_250_MS    UINT8_C(0x03)
-#define BMP280_ODR_500_MS    UINT8_C(0x04)
+#define BMP280_ODR_125_MS     UINT8_C(0x02)
+#define BMP280_ODR_250_MS     UINT8_C(0x03)
+#define BMP280_ODR_500_MS     UINT8_C(0x04)
 #define BMP280_ODR_1000_MS    UINT8_C(0x05)
 #define BMP280_ODR_2000_MS    UINT8_C(0x06)
 #define BMP280_ODR_4000_MS    UINT8_C(0x07)
 
 /*! @name Over-sampling macros */
-#define BMP280_OS_NONE    UINT8_C(0x00)
-#define BMP280_OS_1X    UINT8_C(0x01)
-#define BMP280_OS_2X    UINT8_C(0x02)
-#define BMP280_OS_4X    UINT8_C(0x03)
-#define BMP280_OS_8X    UINT8_C(0x04)
-#define BMP280_OS_16X    UINT8_C(0x05)
+#define BMP280_OS_NONE        UINT8_C(0x00)
+#define BMP280_OS_1X          UINT8_C(0x01)
+#define BMP280_OS_2X          UINT8_C(0x02)
+#define BMP280_OS_4X          UINT8_C(0x03)
+#define BMP280_OS_8X          UINT8_C(0x04)
+#define BMP280_OS_16X         UINT8_C(0x05)
 
 /*! @name Filter coefficient macros */
-#define BMP280_FILTER_OFF    UINT8_C(0x00)
+#define BMP280_FILTER_OFF        UINT8_C(0x00)
 #define BMP280_FILTER_COEFF_2    UINT8_C(0x01)
 #define BMP280_FILTER_COEFF_4    UINT8_C(0x02)
 #define BMP280_FILTER_COEFF_8    UINT8_C(0x03)
-#define BMP280_FILTER_COEFF_16    UINT8_C(0x04)
+#define BMP280_FILTER_COEFF_16   UINT8_C(0x04)
 
 /*! @name SPI 3-Wire macros */
-#define BMP280_SPI3_WIRE_ENABLE        UINT8_C(1)
-#define BMP280_SPI3_WIRE_DISABLE    UINT8_C(0)
+#define BMP280_SPI3_WIRE_ENABLE    UINT8_C(1)
+#define BMP280_SPI3_WIRE_DISABLE   UINT8_C(0)
 
 /*! @name Measurement status */
-#define BMP280_MEAS_DONE    UINT8_C(0)
-#define BMP280_MEAS_ONGOING    UINT8_C(1)
+#define BMP280_MEAS_DONE           UINT8_C(0)
+#define BMP280_MEAS_ONGOING        UINT8_C(1)
 
 /*! @name Image update */
-#define BMP280_IM_UPDATE_DONE        UINT8_C(0)
-#define BMP280_IM_UPDATE_ONGOING    UINT8_C(1)
+#define BMP280_IM_UPDATE_DONE      UINT8_C(0)
+#define BMP280_IM_UPDATE_ONGOING   UINT8_C(1)
 
 /*! @name Position and mask macros */
-#define BMP280_STATUS_IM_UPDATE_POS    UINT8_C(0)
+#define BMP280_STATUS_IM_UPDATE_POS     UINT8_C(0)
 #define BMP280_STATUS_IM_UPDATE_MASK    UINT8_C(0x01)
-#define BMP280_STATUS_MEAS_POS        UINT8_C(3)
-#define BMP280_STATUS_MEAS_MASK        UINT8_C(0x08)
-#define BMP280_OS_TEMP_POS        UINT8_C(5)
-#define BMP280_OS_TEMP_MASK        UINT8_C(0xE0)
-#define BMP280_OS_PRES_POS        UINT8_C(2)
-#define BMP280_OS_PRES_MASK        UINT8_C(0x1C)
-#define BMP280_POWER_MODE_POS        UINT8_C(0)
-#define BMP280_POWER_MODE_MASK        UINT8_C(0x03)
-#define BMP280_STANDBY_DURN_POS        UINT8_C(5)
-#define BMP280_STANDBY_DURN_MASK    UINT8_C(0xE0)
-#define BMP280_FILTER_POS        UINT8_C(2)
-#define BMP280_FILTER_MASK        UINT8_C(0x1C)
-#define BMP280_SPI3_ENABLE_POS        UINT8_C(0)
-#define BMP280_SPI3_ENABLE_MASK        UINT8_C(0x01)
+#define BMP280_STATUS_MEAS_POS          UINT8_C(3)
+#define BMP280_STATUS_MEAS_MASK         UINT8_C(0x08)
+#define BMP280_OS_TEMP_POS              UINT8_C(5)
+#define BMP280_OS_TEMP_MASK             UINT8_C(0xE0)
+#define BMP280_OS_PRES_POS              UINT8_C(2)
+#define BMP280_OS_PRES_MASK             UINT8_C(0x1C)
+#define BMP280_POWER_MODE_POS           UINT8_C(0)
+#define BMP280_POWER_MODE_MASK          UINT8_C(0x03)
+#define BMP280_STANDBY_DURN_POS         UINT8_C(5)
+#define BMP280_STANDBY_DURN_MASK        UINT8_C(0xE0)
+#define BMP280_FILTER_POS               UINT8_C(2)
+#define BMP280_FILTER_MASK              UINT8_C(0x1C)
+#define BMP280_SPI3_ENABLE_POS          UINT8_C(0)
+#define BMP280_SPI3_ENABLE_MASK         UINT8_C(0x01)
 
 /*! @name Calibration parameters' relative position */
 #define    BMP280_DIG_T1_LSB_POS    UINT8_C(0)
@@ -269,7 +273,7 @@ extern "C"
 #define    BMP280_DIG_P8_MSB_POS    UINT8_C(21)
 #define    BMP280_DIG_P9_LSB_POS    UINT8_C(22)
 #define    BMP280_DIG_P9_MSB_POS    UINT8_C(23)
-#define BMP280_CALIB_DATA_SIZE    UINT8_C(24)
+#define    BMP280_CALIB_DATA_SIZE   UINT8_C(24)
 
 /*! @name Bit-slicing macros */
 #define BMP280_GET_BITS(bitname, x)                     ((x & bitname##_MASK) \
@@ -282,26 +286,25 @@ extern "C"
         (bitname##_MASK))
 
 /*! @name Function pointer type definitions */
-typedef int8_t (*bmp280_com_fptr_t)(uint8_t dev_id, uint8_t reg_addr,
-        uint8_t *data, uint16_t len);
+typedef int8_t (*bmp280_com_fptr_t)(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len);
 
 typedef void (*bmp280_delay_fptr_t)(uint32_t period);
 
 /*! @name Calibration parameters' structure */
 struct bmp280_calib_param {
     uint16_t dig_t1;
-    int16_t dig_t2;
-    int16_t dig_t3;
+    int16_t  dig_t2;
+    int16_t  dig_t3;
     uint16_t dig_p1;
-    int16_t dig_p2;
-    int16_t dig_p3;
-    int16_t dig_p4;
-    int16_t dig_p5;
-    int16_t dig_p6;
-    int16_t dig_p7;
-    int16_t dig_p8;
-    int16_t dig_p9;
-    int32_t t_fine;
+    int16_t  dig_p2;
+    int16_t  dig_p3;
+    int16_t  dig_p4;
+    int16_t  dig_p5;
+    int16_t  dig_p6;
+    int16_t  dig_p7;
+    int16_t  dig_p8;
+    int16_t  dig_p9;
+    int32_t  t_fine;
 };
 
 /*! @name Sensor configuration structure */
@@ -327,16 +330,17 @@ struct bmp280_uncomp_data {
 
 /*! @name API device structure */
 struct bmp280_dev {
-    uint8_t chip_id;
-    uint8_t dev_id;
-    uint8_t intf;
-    uint8_t csn_pin;        // = NRF_CSN_Pin;
-    uint8_t csn_port;       //= NRF_CSN_GPIO_Port;
-    bmp280_com_fptr_t read;
-    bmp280_com_fptr_t write;
-    bmp280_delay_fptr_t delay_ms;
-    struct bmp280_calib_param calib_param;
-    struct bmp280_config conf;
+              uint8_t              chip_id;
+              uint8_t              dev_id;
+              uint8_t              intf;
+              SPI_HandleTypeDef*   spi;
+              GPIO_TypeDef*        csn_port;       // = BMP280_CSN_GPIO_Port;
+              uint8_t              csn_pin;        // = BMP280_CSN_Pin;
+              bmp280_com_fptr_t    read;
+              bmp280_com_fptr_t    write;
+              bmp280_delay_fptr_t  delay_ms;
+       struct bmp280_calib_param   calib_param;
+       struct bmp280_config        conf;
 };
 
 #ifdef __cplusplus
