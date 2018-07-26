@@ -65,7 +65,11 @@ extern "C"
 #include <stdint.h>
 #include <stddef.h>
 #endif
+  
+  
 #include "gpio.h"
+#include "main.h"
+  
 /****************************************************************/
 /*! @name        Common macros                */
 /****************************************************************/

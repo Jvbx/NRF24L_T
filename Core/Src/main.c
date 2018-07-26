@@ -127,7 +127,7 @@ int main(void)
  
  struct bmp280_uncomp_data ucomp_data;
 uint8_t meas_dur = bmp280_compute_meas_time(&bmp280);
-int8_t rslt;
+int8_t rslt = 0;
 printf("Measurement duration: %dms\r\n", meas_dur);
 
 /* Loop to read out 10 samples of data */ 
