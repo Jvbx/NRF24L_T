@@ -51,6 +51,7 @@
 extern SPI_HandleTypeDef hspi1;
 /* USER CODE END Includes */
 
+extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 extern SPI_HandleTypeDef hspi3;
 
@@ -60,6 +61,7 @@ extern SPI_HandleTypeDef hspi3;
 
 extern void _Error_Handler(char *, int);
 
+void MX_SPI1_Init(void);
 void MX_SPI2_Init(void);
 void MX_SPI3_Init(void);
 

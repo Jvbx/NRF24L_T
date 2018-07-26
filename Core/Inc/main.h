@@ -49,6 +49,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define BMP280_CSN_Pin GPIO_PIN_4
+#define BMP280_CSN_GPIO_Port GPIOA
 #define AT45_RESET_Pin GPIO_PIN_14
 #define AT45_RESET_GPIO_Port GPIOE
 #define AT45_WP_Pin GPIO_PIN_11

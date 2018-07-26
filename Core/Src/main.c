@@ -114,6 +114,7 @@ int main(void)
   MX_TIM14_Init();
   MX_SPI2_Init();
   MX_CRC_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
  at45db_init(&dataflash);
  uint8_t at_tx[532] = {0};

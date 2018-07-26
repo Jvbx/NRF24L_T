@@ -631,7 +631,7 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, u
     
     huart->ErrorCode = HAL_UART_ERROR_NONE;
     huart->gState = HAL_UART_STATE_BUSY_TX;
- 
+	
     /* Init tickstart for timeout managment */
     tickstart = HAL_GetTick();
 
@@ -713,7 +713,7 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
     
     huart->ErrorCode = HAL_UART_ERROR_NONE;
     huart->RxState = HAL_UART_STATE_BUSY_RX;
- 
+	
     /* Init tickstart for timeout managment */
     tickstart = HAL_GetTick();
         
@@ -2045,7 +2045,7 @@ static void UART_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
     /* Disable the DMA transfer for the receiver request by setting the DMAR bit 
        in the UART CR3 register */
     CLEAR_BIT(huart->Instance->CR3, USART_CR3_DMAR);
- 
+	
     /* At end of Rx process, restore huart->RxState to Ready */
     huart->RxState = HAL_UART_STATE_READY;
   }
@@ -2493,7 +2493,7 @@ static void UART_SetConfig(UART_HandleTypeDef *huart)
     if(huart->Instance == USART1)
     {
       huart->Instance->BRR = UART_BRR_SAMPLING8(HAL_RCC_GetPCLK2Freq(), huart->Init.BaudRate);
-    } 
+    }	
 #endif /* USART6 */
     else
     {
@@ -2512,7 +2512,7 @@ static void UART_SetConfig(UART_HandleTypeDef *huart)
     if(huart->Instance == USART1)
     {
       huart->Instance->BRR = UART_BRR_SAMPLING16(HAL_RCC_GetPCLK2Freq(), huart->Init.BaudRate);
-    } 
+    }	
 #endif /* USART6 */
     else
     {
