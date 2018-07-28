@@ -87,7 +87,7 @@ NRF_RESULT nrf_init(nrf24l01* dev, nrf24l01_config* config) {
   
   nrf_set_address_width(dev, dev->config.addr_width);
   nrf_set_retransmittion_count(dev, dev->config.retransmit_count);
-    nrf_set_retransmittion_delay(dev, dev->config.retransmit_delay);
+  nrf_set_retransmittion_delay(dev, dev->config.retransmit_delay);
   //nrf_togglefeatures(dev);
   //nrf_write_register(dev, NRF_FEATURE, 0);
   //nrf_write_register(dev, NRF_DYNPD, 0);
@@ -100,30 +100,30 @@ NRF_RESULT nrf_init(nrf24l01* dev, nrf24l01_config* config) {
   nrf_set_tx_power(dev, dev->config.tx_power);
   
   nrf_set_tx_address(dev, dev->config.tx_address);
-    nrf_set_rx_address_p0(dev, dev->config.tx_address);
+  nrf_set_rx_address_p0(dev, dev->config.tx_address);
   nrf_set_rx_address_p1(dev, dev->config.rx_address);
     
    
-    nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
-    nrf_set_rx_payload_width_p1(dev, dev->config.payload_length);
+  nrf_set_rx_payload_width_p0(dev, dev->config.payload_length);
+  nrf_set_rx_payload_width_p1(dev, dev->config.payload_length);
 
     
-    nrf_enable_rx_data_ready_irq(dev, 1);
-    nrf_enable_tx_data_sent_irq(dev, 1);
-    nrf_enable_max_retransmit_irq(dev, 1);
+  nrf_enable_rx_data_ready_irq(dev, 1);
+  nrf_enable_tx_data_sent_irq(dev, 1);
+  nrf_enable_max_retransmit_irq(dev, 1);
   
-    nrf_flush_rx(dev);
+  nrf_flush_rx(dev);
   nrf_flush_tx(dev);
   nrf_rx_tx_control(dev, NRF_STATE_RX);
   HAL_Delay(140);
-    ce_set(dev);
+  ce_set(dev);
 
     return NRF_OK;
 }
 
 
 
-NRF_RESULT nrf_send_command(nrf24l01* dev, NRF_COMMAND cmd, const uint8_t* tx,
+NRF_RESULT nrf_send_command(nrf24l01* dev, uint8_t cmd, const uint8_t* tx,
                             uint8_t* rx, uint8_t len) {
     uint8_t myTX[len + 1];
     uint8_t myRX[len + 1];
@@ -199,7 +199,7 @@ __weak void nrf_packet_received_callback(nrf24l01* dev, uint8_t* data) {
 
 NRF_RESULT nrf_read_register(nrf24l01* dev, uint8_t reg, uint8_t* data) {
     uint8_t tx = 0;
-    if (nrf_send_command(dev, NRF_CMD_R_REGISTER | reg, &tx, data, 1) !=
+    if (nrf_send_command(dev,(uint8_t)NRF_CMD_R_REGISTER | reg, &tx, data, 1) !=
         NRF_OK) {
         return NRF_ERROR;
     }
@@ -208,7 +208,7 @@ NRF_RESULT nrf_read_register(nrf24l01* dev, uint8_t reg, uint8_t* data) {
 
 NRF_RESULT nrf_write_register(nrf24l01* dev, uint8_t reg, uint8_t* data) {
     uint8_t rx = 0;
-    if (nrf_send_command(dev, NRF_CMD_W_REGISTER | reg, data, &rx, 1) !=
+    if (nrf_send_command(dev, (uint8_t)NRF_CMD_W_REGISTER | reg, data, &rx, 1) !=
         NRF_OK) {
         return NRF_ERROR;
     }
@@ -552,7 +552,7 @@ NRF_RESULT nrf_enable_max_retransmit_irq(nrf24l01* dev, bool activate) {
 
 NRF_RESULT nrf_set_rx_address_p0(nrf24l01* dev, const uint8_t* address) {
     uint8_t rx[5];
-    if (nrf_send_command(dev, NRF_CMD_W_REGISTER | NRF_RX_ADDR_P0, address, rx, 5) != NRF_OK) 
+    if (nrf_send_command(dev, (uint8_t)NRF_CMD_W_REGISTER | (uint8_t)NRF_RX_ADDR_P0, address, rx, 5) != NRF_OK) 
    {
         return NRF_ERROR;
    }
@@ -572,7 +572,7 @@ NRF_RESULT nrf_set_rx_address_p1(nrf24l01* dev, const uint8_t* address) {
 
 NRF_RESULT nrf_set_tx_address(nrf24l01* dev, const uint8_t* address) {
     uint8_t rx[5];
-    if (nrf_send_command(dev, NRF_CMD_W_REGISTER | NRF_TX_ADDR, address, rx,
+    if (nrf_send_command(dev, (uint8_t)NRF_CMD_W_REGISTER | (uint8_t)NRF_TX_ADDR, address, rx,
                          5) != NRF_OK) {
         return NRF_ERROR;
     }

@@ -29,7 +29,6 @@ unsigned char GPS_COUNT=0;
 volatile char DataDone=0;
 unsigned char DataValid=0;
 uint8_t i = 0; 
-static uint8_t accum[255];
 
 
 
@@ -44,12 +43,6 @@ static char *MsgTxt=(char*)&MsgType;
 static unsigned char ComaPoint=0xff;
 static unsigned char CharPoint=0;
 
-accum[i] = data;
-i++;
-if (i>=255) 
-{i = 0;}
- //return;
- 
  
 if(data=='$'){ByteCount=0;ComaPoint=0xff;MsgTxt=(char*)&MsgType; DataDone=0;return;} //ждем начала стрки
 if(ByteCount==0xff) return;                                                                     //

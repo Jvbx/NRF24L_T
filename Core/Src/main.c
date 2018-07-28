@@ -125,31 +125,32 @@ int main(void)
 
 
  
- struct bmp280_uncomp_data ucomp_data;
+struct bmp280_uncomp_data ucomp_data;
+for (uint8_t i=0; i<255; i++) {
+  
 uint8_t meas_dur = bmp280_compute_meas_time(&bmp280);
-int8_t rslt = 0;
-printf("Measurement duration: %dms\r\n", meas_dur);
+int8_t res = 0;
+//printf("Measurement duration: %dms\r\n", meas_dur);
 
 /* Loop to read out 10 samples of data */ 
-for (uint8_t i = 0; (i < 10) && (rslt == BMP280_OK); i++) {
     bmp280.delay_ms(meas_dur); /* Measurement time */
 
-    rslt = bmp280_get_uncomp_data(&ucomp_data, &bmp280);
+    res = bmp280_get_uncomp_data(&ucomp_data, &bmp280);
     /* Check if rslt == BMP280_OK, if not, then handle accordingly */
 
-    int32_t temp32 = bmp280_comp_temp_32bit(ucomp_data.uncomp_temp, &bmp280);
+    int32_t  temp32 = bmp280_comp_temp_32bit(ucomp_data.uncomp_temp, &bmp280);
     uint32_t pres32 = bmp280_comp_pres_32bit(ucomp_data.uncomp_press, &bmp280);
     uint32_t pres64 = bmp280_comp_pres_64bit(ucomp_data.uncomp_press, &bmp280);
-    double temp = bmp280_comp_temp_double(ucomp_data.uncomp_temp, &bmp280);
-    double pres = bmp280_comp_pres_double(ucomp_data.uncomp_press, &bmp280);
+    double   temp   = bmp280_comp_temp_double(ucomp_data.uncomp_temp, &bmp280);
+    double   pres   = bmp280_comp_pres_double(ucomp_data.uncomp_press, &bmp280);
 
-    printf("UT: %d, UP: %d, T32: %d, P32: %d, P64: %d, P64N: %d, T: %f, P: %f\r\n", \
+    //printf("UT: %d, UP: %d, T32: %d, P32: %d, P64: %d, P64N: %d, T: %f, P: %f\r\n", \
       ucomp_data.uncomp_temp, ucomp_data.uncomp_press, temp32, \
       pres32, pres64, pres64 / 256, temp, pres);
 
-    //bmp280.delay_ms(1000); /* Sleep time between measurements = BMP280_ODR_1000_MS */
+    bmp280.delay_ms(1000); /* Sleep time between measurements = BMP280_ODR_1000_MS */
 }
- 
+
  
  
  
@@ -174,11 +175,11 @@ for (uint8_t i = 0; (i < 10) && (rslt == BMP280_OK); i++) {
  while (!DataDone)
  {
  }  
- sprintf((char *)tx_data, (char *)&SLatitude); 
+ //sprintf((char *)tx_data, (char *)&SLatitude); 
  //printf("data = 0x%04X\r\n",(char *)tx_data); 
  nrf_send_packet(&nrf,tx_data);
  
- sprintf((char *)tx_data, (char *)&SLongitude);
+ //sprintf((char *)tx_data, (char *)&SLongitude);
  nrf_send_packet(&nrf,tx_data);
  //HAL_Delay(250);
   /* USER CODE END WHILE */

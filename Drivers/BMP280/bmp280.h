@@ -216,7 +216,7 @@ int8_t bmp280_get_uncomp_data(struct bmp280_uncomp_data *uncomp_data, const stru
  * "5123" equals 51.23 degree Celsius.
  *
  */
-int32_t bmp280_comp_temp_32bit(uint32_t uncomp_temp, struct bmp280_dev *dev);
+int32_t bmp280_comp_temp_32bit(int32_t uncomp_temp, struct bmp280_dev *dev);
 
 /*!
  * @brief This API is used to get the compensated pressure from

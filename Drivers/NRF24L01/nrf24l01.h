@@ -112,14 +112,14 @@ typedef struct {
     SPI_HandleTypeDef* spi;
     uint32_t           spi_timeout;
 
-    GPIO_TypeDef* csn_port;
-    uint16_t      csn_pin;
+    GPIO_TypeDef*       csn_port;
+    uint16_t            csn_pin;
 
-    GPIO_TypeDef* ce_port;
-    uint16_t      ce_pin;
+    GPIO_TypeDef*       ce_port;
+    uint16_t            ce_pin;
 
-    GPIO_TypeDef* irq_port;
-    uint16_t      irq_pin;
+    GPIO_TypeDef*       irq_port;
+    uint16_t            irq_pin;
 
 } nrf24l01_config;
 
@@ -176,7 +176,7 @@ NRF_RESULT nrf_send_packet_noack(nrf24l01* dev, const uint8_t* data);
 NRF_RESULT nrf_push_packet(nrf24l01* dev, const uint8_t* data);
 
 /* LOW LEVEL STUFF (you don't have to look in here...)*/
-NRF_RESULT nrf_send_command(nrf24l01* dev, NRF_COMMAND cmd, const uint8_t* tx,
+NRF_RESULT nrf_send_command(nrf24l01* dev, uint8_t cmd, const uint8_t* tx,
                             uint8_t* rx, uint8_t len);
 /* CMD */
 NRF_RESULT nrf_read_register(nrf24l01* dev, uint8_t reg, uint8_t* data);
