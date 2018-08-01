@@ -1,10 +1,10 @@
 #include "bmp280_localfunc.h"
 
-static void bmp280_spi_stop(void) {
+inline static void bmp280_spi_stop(void) {
     HAL_GPIO_WritePin(BMP280_CSN_GPIO_Port, BMP280_CSN_Pin, GPIO_PIN_SET);
 }
 
-static void bmp280_spi_run(void) {
+inline static void bmp280_spi_run(void) {
     HAL_GPIO_WritePin(BMP280_CSN_GPIO_Port, BMP280_CSN_Pin, GPIO_PIN_RESET);
 }
 
@@ -12,9 +12,10 @@ static void bmp280_spi_run(void) {
 int8_t BMP280_SPI_Read(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len)
 {
  HAL_StatusTypeDef res;
- uint8_t rxbuf[32] ={0};
- rxbuf[0] = reg_addr;
-  if (len>1) {memcpy(rxbuf + 1,data,len);}
+ uint8_t rxbuf[len+sizeof(reg_addr)];
+  memchr(rxbuf, 0, len+sizeof(reg_addr));
+  rxbuf[0] = reg_addr;
+  memcpy(rxbuf + 1,data,len);
   bmp280_spi_run();
   res = HAL_SPI_Receive(&hspi1, rxbuf, len+1,100);  //(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout)
   bmp280_spi_stop();
@@ -27,7 +28,7 @@ int8_t BMP280_SPI_Write(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_
  HAL_StatusTypeDef res;
  uint8_t txbuf[16] ={0};
  txbuf[0] = reg_addr;
- if (len>1) {memcpy(txbuf + 1,data,len);}
+ memcpy(txbuf + 1,data,len);
  bmp280_spi_run();
  res =  HAL_SPI_Transmit(&hspi1, txbuf, len+1, 100);  //(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout)
  bmp280_spi_stop();

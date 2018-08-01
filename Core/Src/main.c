@@ -61,8 +61,12 @@ nrf24l01  nrf;
 at45db   dataflash;
 struct bmp280_dev bmp280;
 char rxbuf = 0;
-
-
+    int32_t  temp32 = 0;
+    uint32_t pres32 = 0;
+    uint32_t pres64 = 0;
+    double   temp   = 0;
+    double   pres   = 0;
+    uint8_t meas_dur = 0xFF;
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE END PV */
@@ -119,8 +123,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
  at45db_init(&dataflash);
  BMP280_Config_and_run(&bmp280);
- bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp280);
- HAL_Delay(1000);
+ //bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp280);
+ //HAL_Delay(1000);
 
 
 

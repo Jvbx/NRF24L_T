@@ -285,14 +285,10 @@ extern "C"
 
 
 /*! @name Bit-slicing macros */
-#define BMP280_GET_BITS(bitname, x)((x & bitname##_MASK) \
-            >> bitname##_POS)
-#define    BMP280_SET_BITS(regvar, bitname, val)((regvar & \
-            ~bitname##_MASK) | ((val << bitname##_POS) & bitname##_MASK))
-#define    BMP280_SET_BITS_POS_0(reg_data, bitname, data)((reg_data & \
-            ~(bitname##_MASK)) | (data & bitname##_MASK))
-#define    BMP280_GET_BITS_POS_0(bitname, reg_data)(reg_data & \
-           (bitname##_MASK))
+#define    BMP280_GET_BITS(bitname, x)                      ((x & bitname##_MASK) >> bitname##_POS)
+#define    BMP280_SET_BITS(regvar, bitname, val)            ((regvar & ~bitname##_MASK) | ((val << bitname##_POS) & bitname##_MASK))
+#define    BMP280_SET_BITS_POS_0(reg_data, bitname, data)   ((reg_data & ~(bitname##_MASK)) | (data & bitname##_MASK))
+#define    BMP280_GET_BITS_POS_0(bitname, reg_data)         (reg_data & (bitname##_MASK))
 
 /*! @name Function pointer type definitions */
 typedef int8_t (*bmp280_com_fptr_t)(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len);

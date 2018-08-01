@@ -272,10 +272,10 @@ int8_t bmp280_get_config(struct bmp280_config *conf, struct bmp280_dev *dev)
     rslt = bmp280_get_regs(BMP280_CTRL_MEAS_ADDR, temp, 2, dev);
 
     if (rslt == BMP280_OK) {
-      conf->os_temp = BMP280_GET_BITS(BMP280_OS_TEMP, temp[0]);
-      conf->os_pres = BMP280_GET_BITS(BMP280_OS_PRES, temp[0]);
-      conf->odr = BMP280_GET_BITS(BMP280_STANDBY_DURN, temp[1]);
-      conf->filter = BMP280_GET_BITS(BMP280_FILTER, temp[1]);
+      conf->os_temp  = BMP280_GET_BITS(BMP280_OS_TEMP, temp[0]);
+      conf->os_pres  = BMP280_GET_BITS(BMP280_OS_PRES, temp[0]);
+      conf->odr      = BMP280_GET_BITS(BMP280_STANDBY_DURN, temp[1]);
+      conf->filter   = BMP280_GET_BITS(BMP280_FILTER, temp[1]);
       conf->spi3w_en = BMP280_GET_BITS_POS_0(BMP280_SPI3_ENABLE, temp[1]);
 
       dev->conf = *conf;
