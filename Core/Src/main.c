@@ -119,7 +119,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
  at45db_init(&dataflash);
  BMP280_Config_and_run(&bmp280);
-
+ bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp280);
+ HAL_Delay(1000);
 
 
 

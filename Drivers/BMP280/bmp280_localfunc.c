@@ -70,9 +70,9 @@ int8_t  BMP280_Config_and_run(struct bmp280_dev *dev)
   conf.filter   = BMP280_FILTER_COEFF_2;
   conf.os_pres  = BMP280_OS_1X;
   conf.os_temp  = BMP280_OS_1X;
-  conf.odr      = BMP280_ODR_0_5_MS;
+  conf.odr      = BMP280_ODR_62_5_MS;
   rslt = bmp280_set_config(&conf, dev);
-  rslt |= bmp280_set_power_mode(BMP280_NORMAL_MODE, dev);  /* Always set the power mode after setting the configuration */
+  rslt |= bmp280_set_power_mode(BMP280_NORMAL_MODE, dev);  /* Always set the power mode after setting the configuration */    //#define BMP280_NORMAL_MODE    UINT8_C(0x03)
   if (BMP280_OK != rslt) {return BMP280_E_COMM_FAIL;}      /* Check if rslt == BMP280_OK, if not, then handle accordingly */
   return rslt;
 }
