@@ -346,6 +346,7 @@ struct bmp280_dev {
               bmp280_delay_fptr_t  delay_ms;
        struct bmp280_calib_param   calib_param;
        struct bmp280_config        conf;
+       struct bmp280_status        status;
 };
 
 #ifdef __cplusplus

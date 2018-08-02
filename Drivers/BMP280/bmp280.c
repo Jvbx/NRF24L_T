@@ -143,7 +143,7 @@ int8_t bmp280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
   int8_t rslt;
   uint8_t temp_buff[8]; /* Typically not to write more than 4 registers */
   uint16_t temp_len;
-  uint8_t reg_addr_cnt;
+ // uint8_t reg_addr_cnt;
 
   if (len > 4)
     len = 4;
@@ -154,12 +154,12 @@ int8_t bmp280_set_regs(uint8_t *reg_addr, const uint8_t *reg_data, uint8_t len, 
     if (len != 0) {
       temp_buff[0] = reg_data[0];
       /* Mask the register address' MSB if interface selected is SPI */
-      if (dev->intf == BMP280_SPI_INTF) {
+      //if (dev->intf == BMP280_SPI_INTF) {
         /* Converting all the reg address into proper SPI write address
          i.e making MSB(R/`W) bit 0 */
-        for (reg_addr_cnt = 0; reg_addr_cnt < len; reg_addr_cnt++)
+        for (uint8_t reg_addr_cnt = 0; reg_addr_cnt < len; reg_addr_cnt++)
           reg_addr[reg_addr_cnt] = reg_addr[reg_addr_cnt] & 0x7F;
-      }
+      //}
 
       /* Burst write mode */
       if (len > 1) {
@@ -393,11 +393,8 @@ int32_t bmp280_comp_temp_32bit(int32_t uncomp_temp, struct bmp280_dev *dev)
   rslt = null_ptr_check(dev);
 
   if (rslt == BMP280_OK) {
-    var1 = ((((uncomp_temp >> 3) - ((int32_t) dev->calib_param.dig_t1 << 1)))
-    * ((int32_t) dev->calib_param.dig_t2)) >> 11;
-    var2 = (((((uncomp_temp >> 4) - ((int32_t) dev->calib_param.dig_t1))
-    * ((uncomp_temp >> 4) - ((int32_t) dev->calib_param.dig_t1))) >> 12)
-    * ((int32_t) dev->calib_param.dig_t3)) >> 14;
+    var1 = ((((uncomp_temp >> 3) - ((int32_t) dev->calib_param.dig_t1 << 1))) * ((int32_t) dev->calib_param.dig_t2)) >> 11;
+    var2 = (((((uncomp_temp >> 4) - ((int32_t) dev->calib_param.dig_t1)) * ((uncomp_temp >> 4) - ((int32_t) dev->calib_param.dig_t1))) >> 12) * ((int32_t) dev->calib_param.dig_t3)) >> 14;
 
     dev->calib_param.t_fine = var1 + var2;
     temperature = (dev->calib_param.t_fine * 5 + 128) >> 8;

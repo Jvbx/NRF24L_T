@@ -18,3 +18,10 @@
 *.scvd
 *.dbgconf
 *.Bak
+*._ip
+*.i
+*.__i
+*._2i
+*.fed
+*._ia
+*.l2p

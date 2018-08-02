@@ -58,15 +58,15 @@
 
 /* USER CODE BEGIN PV */
 nrf24l01  nrf;
-at45db   dataflash;
-struct bmp280_dev bmp280;
-char rxbuf = 0;
+at45db    dataflash;
+struct    bmp280_dev  bmp280;
+    char     rxbuf = 0;
     int32_t  temp32 = 0;
     uint32_t pres32 = 0;
     uint32_t pres64 = 0;
     double   temp   = 0;
     double   pres   = 0;
-    uint8_t meas_dur = 0xFF;
+    uint8_t  meas_dur = 0xFF;
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE END PV */
@@ -121,39 +121,42 @@ int main(void)
   MX_CRC_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
- at45db_init(&dataflash);
- BMP280_Config_and_run(&bmp280);
+  at45db_init(&dataflash);
+  BMP280_Config_and_run(&bmp280);
  //bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp280);
  //HAL_Delay(1000);
 
 
 
 
- 
+   meas_dur = bmp280_compute_meas_time(&bmp280); 
+
 struct bmp280_uncomp_data ucomp_data;
-for (uint8_t i=0; i<255; i++) {
+for (uint8_t i=0; i<100; i++) {
   
-uint8_t meas_dur = bmp280_compute_meas_time(&bmp280);
+
 int8_t res = 0;
 //printf("Measurement duration: %dms\r\n", meas_dur);
 
 /* Loop to read out 10 samples of data */ 
     bmp280.delay_ms(meas_dur); /* Measurement time */
-
+    do {bmp280_get_status(&bmp280.status, &bmp280);}
+    while (bmp280.status.im_update); 
     res = bmp280_get_uncomp_data(&ucomp_data, &bmp280);
-    /* Check if rslt == BMP280_OK, if not, then handle accordingly */
+    if (BMP280_OK != res) {return BMP280_E_COMM_FAIL;}          /* Check if rslt == BMP280_OK, if not, then handle accordingly */
 
-    int32_t  temp32 = bmp280_comp_temp_32bit(ucomp_data.uncomp_temp, &bmp280);
-    uint32_t pres32 = bmp280_comp_pres_32bit(ucomp_data.uncomp_press, &bmp280);
-    uint32_t pres64 = bmp280_comp_pres_64bit(ucomp_data.uncomp_press, &bmp280);
-    double   temp   = bmp280_comp_temp_double(ucomp_data.uncomp_temp, &bmp280);
-    double   pres   = bmp280_comp_pres_double(ucomp_data.uncomp_press, &bmp280);
+     temp32 = bmp280_comp_temp_32bit(ucomp_data.uncomp_temp, &bmp280);
+     pres32 = bmp280_comp_pres_32bit(ucomp_data.uncomp_press, &bmp280);
+     pres64 = bmp280_comp_pres_64bit(ucomp_data.uncomp_press, &bmp280);
+     temp   = bmp280_comp_temp_double(ucomp_data.uncomp_temp, &bmp280);
+     pres   = bmp280_comp_pres_double(ucomp_data.uncomp_press, &bmp280);
+    char resString[300];
+    sprintf(resString, "UT: %d, UP: %d, T32: %ld, P32: %ld\r\n", \
+    ucomp_data.uncomp_temp, ucomp_data.uncomp_press, temp32, pres32);
 
     //printf("UT: %d, UP: %d, T32: %d, P32: %d, P64: %d, P64N: %d, T: %f, P: %f\r\n", \
       ucomp_data.uncomp_temp, ucomp_data.uncomp_press, temp32, \
       pres32, pres64, pres64 / 256, temp, pres);
-
-    bmp280.delay_ms(1000); /* Sleep time between measurements = BMP280_ODR_1000_MS */
 }
 
  

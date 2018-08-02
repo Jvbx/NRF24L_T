@@ -1,10 +1,10 @@
 #include "bmp280_localfunc.h"
 
-inline static void bmp280_spi_stop(void) {
+static void bmp280_spi_stop(void) {
     HAL_GPIO_WritePin(BMP280_CSN_GPIO_Port, BMP280_CSN_Pin, GPIO_PIN_SET);
 }
 
-inline static void bmp280_spi_run(void) {
+static void bmp280_spi_run(void) {
     HAL_GPIO_WritePin(BMP280_CSN_GPIO_Port, BMP280_CSN_Pin, GPIO_PIN_RESET);
 }
 
@@ -12,12 +12,12 @@ inline static void bmp280_spi_run(void) {
 int8_t BMP280_SPI_Read(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len)
 {
  HAL_StatusTypeDef res;
- uint8_t rxbuf[len+sizeof(reg_addr)];
-  memchr(rxbuf, 0, len+sizeof(reg_addr));
+ uint8_t rxbuf[1+len];
+  memchr(rxbuf, 0, 1+len);
   rxbuf[0] = reg_addr;
   memcpy(rxbuf + 1,data,len);
   bmp280_spi_run();
-  res = HAL_SPI_Receive(&hspi1, rxbuf, len+1,100);  //(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout)
+  res = HAL_SPI_Receive(&hspi1, rxbuf, 1+len,100);  //(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout)
   bmp280_spi_stop();
   memcpy(data, rxbuf + 1, len);
   return res;
@@ -26,7 +26,8 @@ int8_t BMP280_SPI_Read(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t
 int8_t BMP280_SPI_Write(uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len)
 {
  HAL_StatusTypeDef res;
- uint8_t txbuf[16] ={0};
+ uint8_t txbuf[1+len];
+ memchr(txbuf, 0, 1+len);
  txbuf[0] = reg_addr;
  memcpy(txbuf + 1,data,len);
  bmp280_spi_run();
@@ -69,9 +70,9 @@ int8_t  BMP280_Config_and_run(struct bmp280_dev *dev)
   if (BMP280_OK != rslt) {return BMP280_E_COMM_FAIL;}
   /* Overwrite the desired settings */
   conf.filter   = BMP280_FILTER_COEFF_2;
-  conf.os_pres  = BMP280_OS_1X;
-  conf.os_temp  = BMP280_OS_1X;
-  conf.odr      = BMP280_ODR_62_5_MS;
+  conf.os_pres  = BMP280_OS_2X;
+  conf.os_temp  = BMP280_OS_2X;
+  conf.odr      = BMP280_ODR_0_5_MS;
   rslt = bmp280_set_config(&conf, dev);
   rslt |= bmp280_set_power_mode(BMP280_NORMAL_MODE, dev);  /* Always set the power mode after setting the configuration */    //#define BMP280_NORMAL_MODE    UINT8_C(0x03)
   if (BMP280_OK != rslt) {return BMP280_E_COMM_FAIL;}      /* Check if rslt == BMP280_OK, if not, then handle accordingly */
