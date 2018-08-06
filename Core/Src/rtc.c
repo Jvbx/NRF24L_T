@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
+  * File Name          : RTC.c
+  * Description        : This file provides code for the configuration
+  *                      of the RTC instances.
   ******************************************************************************
   ** This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -37,67 +37,110 @@
   ******************************************************************************
   */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
+#include "rtc.h"
 
-/* USER CODE BEGIN Includes */
+/* USER CODE BEGIN 0 */
 
-/* USER CODE END Includes */
+/* USER CODE END 0 */
 
-/* Private define ------------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
 
-#define BMP280_CSN_Pin GPIO_PIN_4
-#define BMP280_CSN_GPIO_Port GPIOA
-#define AT45_RESET_Pin GPIO_PIN_14
-#define AT45_RESET_GPIO_Port GPIOE
-#define AT45_WP_Pin GPIO_PIN_11
-#define AT45_WP_GPIO_Port GPIOB
-#define AT45_CSN_Pin GPIO_PIN_12
-#define AT45_CSN_GPIO_Port GPIOB
-#define MPU9250_FSYNC_Pin GPIO_PIN_10
-#define MPU9250_FSYNC_GPIO_Port GPIOD
-#define MPU9250_nCS_Pin GPIO_PIN_12
-#define MPU9250_nCS_GPIO_Port GPIOD
-#define MPU9250_INT_Pin GPIO_PIN_14
-#define MPU9250_INT_GPIO_Port GPIOD
-#define MPU9250_INT_EXTI_IRQn EXTI15_10_IRQn
-#define NRF_CSN_Pin GPIO_PIN_15
-#define NRF_CSN_GPIO_Port GPIOA
-#define NRF_IRQ_Pin GPIO_PIN_0
-#define NRF_IRQ_GPIO_Port GPIOD
-#define NRF_IRQ_EXTI_IRQn EXTI0_IRQn
-#define NRF_CE_Pin GPIO_PIN_1
-#define NRF_CE_GPIO_Port GPIOD
-#define LED1_Pin GPIO_PIN_6
-#define LED1_GPIO_Port GPIOD
-#define LED2_Pin GPIO_PIN_7
-#define LED2_GPIO_Port GPIOD
+/* RTC init function */
+void MX_RTC_Init(void)
+{
+  RTC_TimeTypeDef sTime;
+  RTC_DateTypeDef sDate;
 
-/* ########################## Assert Selection ############################## */
-/**
-  * @brief Uncomment the line below to expanse the "assert_param" macro in the 
-  *        HAL drivers code
-  */
-/* #define USE_FULL_ASSERT    1U */
+    /**Initialize RTC Only 
+    */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
 
-/* USER CODE BEGIN Private defines */
+  /* USER CODE END RTC_Init 2 */
 
-/* USER CODE END Private defines */
+    /**Initialize RTC and set the Time and Date 
+    */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+  /* USER CODE BEGIN RTC_Init 3 */
 
-#ifdef __cplusplus
- extern "C" {
-#endif
-void _Error_Handler(char *, int);
+  /* USER CODE END RTC_Init 3 */
 
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
-#ifdef __cplusplus
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+  /* USER CODE BEGIN RTC_Init 4 */
+
+  /* USER CODE END RTC_Init 4 */
+
 }
-#endif
 
-#endif /* __MAIN_H__ */
+void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
+{
+
+  if(rtcHandle->Instance==RTC)
+  {
+  /* USER CODE BEGIN RTC_MspInit 0 */
+
+  /* USER CODE END RTC_MspInit 0 */
+    /* RTC clock enable */
+    __HAL_RCC_RTC_ENABLE();
+  /* USER CODE BEGIN RTC_MspInit 1 */
+
+  /* USER CODE END RTC_MspInit 1 */
+  }
+}
+
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
+{
+
+  if(rtcHandle->Instance==RTC)
+  {
+  /* USER CODE BEGIN RTC_MspDeInit 0 */
+
+  /* USER CODE END RTC_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_RTC_DISABLE();
+  /* USER CODE BEGIN RTC_MspDeInit 1 */
+
+  /* USER CODE END RTC_MspDeInit 1 */
+  }
+} 
+
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
