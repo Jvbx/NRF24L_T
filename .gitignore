@@ -25,3 +25,7 @@
 *.fed
 *._ia
 *.l2p
+*.ino
+*.cpp
+*.pdf
+*.png
