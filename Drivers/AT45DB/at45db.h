@@ -13,7 +13,7 @@
 
 
 #define AT45DB_PAGE_SIZE     528     //Obsolete parameter - pagesize now determines by respective bit in status register by calling at45db_getstatus()
-#define AT45DB_PAGES         4096    // at45db161 is 16Mbit chip.
+#define AT45DB_PAGES         4096    //at45db161 is 16Mbit chip.
 #define AT45DB_SPI_PORT      &hspi2  //spi port, what else can it be? )
 #define AT45DB_SPI_TIMEOUT   1000    //ftgj! 
 

@@ -47,6 +47,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "mpu9250.h"
 
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
@@ -70,6 +71,17 @@ struct    bmp280_dev  bmp280;
     double   temp   = 0;
     double   pres   = 0;
     uint8_t  meas_dur = 0xFF;
+    
+    
+    
+     float sum = 0;
+uint32_t sumCount = 0;
+    
+    
+    
+    
+    
+    
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE END PV */
@@ -138,7 +150,7 @@ int main(void)
    meas_dur = bmp280_compute_meas_time(&bmp280); 
 
 struct bmp280_uncomp_data ucomp_data;
-for (uint8_t i=0; i<100; i++) {
+for (uint8_t i=0; i<10; i++) {
   
 
 int8_t res = 0;
@@ -165,7 +177,57 @@ int8_t res = 0;
       pres32, pres64, pres64 / 256, temp, pres);
 }
 
+
+
+  uint8_t whoami = readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
+  printf("I AM 0x%x\n\r", whoami); 
+  printf("I SHOULD BE 0x71\n\r");
+  
+  if (whoami == 0x71) // WHO_AM_I should always be 0x68
+  {  
+    printf("MPU9250 is online...\n\r");
+    HAL_Delay(1000);//wait(1);
+    resetMPU9250(); // Reset registers to default in preparation for device calibration
+    calibrateMPU9250(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers  
+    HAL_Delay(2000);//wait(2);
+    initMPU9250(); 
+    printf("MPU9250 initialized for active data mode....\n\r"); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
+    initAK8963(magCalibration);
+    printf("AK8963 initialized for active data mode....\n\r"); // Initialize device for active mode read of magnetometer
+    printf("Accelerometer full-scale range = %f  g\n\r", 2.0f*(float)(1<<Ascale));
+    printf("Gyroscope full-scale range = %f  deg/s\n\r", 250.0f*(float)(1<<Gscale));
+    if(Mscale == 0) printf("Magnetometer resolution = 14  bits\n\r");
+    if(Mscale == 1) printf("Magnetometer resolution = 16  bits\n\r");
+    if(Mmode == 2) printf("Magnetometer ODR = 8 Hz\n\r");
+    if(Mmode == 6) printf("Magnetometer ODR = 100 Hz\n\r");
+    HAL_Delay(2000);//wait(2);
+   }
+   else
+   {
+    printf("Could not connect to MPU9250: \n\r");
+    printf("%#x \n",  whoami);
  
+    while(1) ; // Loop forever if communication doesn't happen
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
  
  HAL_TIM_Base_Start_IT(&htim14);
@@ -280,8 +342,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
 
     nrf_irq_handler(&nrf);
-  } else{
-
+  } 
+ else if(GPIO_Pin== NRF_IRQ_Pin)
+  {
+    mpu9250_irq_handler();
     __NOP();
 
   }

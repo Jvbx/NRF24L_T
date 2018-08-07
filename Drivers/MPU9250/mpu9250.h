@@ -6,8 +6,17 @@
 #define MPU9250_H
 #include <stdbool.h>
 #include <stdint.h>
-#include "spi.h"
 #include "math.h"
+//#include "spi.h"
+#include "i2c.h"
+
+
+//User config
+
+#define MPU9250_I2C_PORT      &hi2c3  //i2c port, what else can it be? )
+#define MPU9250_I2C_TIMEOUT   100
+
+
 
  
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in 
@@ -159,8 +168,72 @@
 #define ZA_OFFSET_H      0x7D
 #define ZA_OFFSET_L      0x7E
 
+// Set initial input parameters
+enum Ascale {
+  AFS_2G = 0,
+  AFS_4G,
+  AFS_8G,
+  AFS_16G
+};
+
+enum Gscale {
+  GFS_250DPS = 0,
+  GFS_500DPS,
+  GFS_1000DPS,
+  GFS_2000DPS
+};
+
+enum Mscale {
+  MFS_14BITS = 0, // 0.6 mG per LSB
+  MFS_16BITS      // 0.15 mG per LSB
+};
+
+
+extern uint8_t Ascale;// = AFS_2G;     // AFS_2G, AFS_4G, AFS_8G, AFS_16G
+extern uint8_t Gscale;// = GFS_250DPS; // GFS_250DPS, GFS_500DPS, GFS_1000DPS, GFS_2000DPS
+extern uint8_t Mscale;// = MFS_16BITS; // MFS_14BITS or MFS_16BITS, 14-bit or 16-bit magnetometer resolution
+extern uint8_t Mmode;// = 0x06;        // Either 8 Hz 0x02) or 100 Hz (0x06) magnetometer data ODR  
+extern float aRes, gRes, mRes;      // scale resolutions per LSB for the sensors
+
+//Set up I2C, (SDA,SCL)
+//I2C i2c(I2C_SDA, I2C_SCL);
+    
+// Pin definitions
+extern int intPin;// = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
+
+extern int16_t accelCount[3];  // Stores the 16-bit signed accelerometer sensor output
+extern int16_t gyroCount[3];   // Stores the 16-bit signed gyro sensor output
+extern int16_t magCount[3];    // Stores the 16-bit signed magnetometer sensor output
+extern float magCalibration[3], magbias[3];  // Factory mag calibration and mag bias
+extern float gyroBias[3], accelBias[3]; // Bias corrections for gyro and accelerometer
+extern float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values 
+extern int16_t tempCount;   // Stores the real internal chip temperature in degrees Celsius
+extern float temperature;
+extern float SelfTest[6];
+
+extern int delt_t; // used to control display output rate
+extern int count;  // used to control display output rate
+
+// parameters for 6 DoF sensor fusion calculations
+extern float PI;
+extern float GyroMeasError;            // gyroscope measurement error in rads/s (start at 60 deg/s), then reduce after ~10 s to 3
+extern float beta;                     // compute beta
+extern float GyroMeasDrift;            // gyroscope measurement drift in rad/s/s (start at 0.0 deg/s/s)
+extern float zeta;                     // compute zeta, the other free parameter in the Madgwick scheme usually set to a small or zero value
+#define Kp 2.0f * 5.0f          // these are the free parameters in the Mahony filter and fusion scheme, Kp for proportional feedback, Ki for integral
+#define Ki 0.0f
+
+
+extern float pitch, yaw, roll;
+extern float deltat;                             // integration interval for both filter schemes
+extern int lastUpdate, firstUpdate, Now;    // used to calculate integration interval                              
+                                                 // used to calculate integration interval
+extern float q[4];           // vector to hold quaternion
+extern float eInt[3];              // vector to hold integral error for Mahony method
+
+
 // Using the MSENSR-9250 breakout board, ADO is set to 0 
-// Seven-bit device address is 110100 for ADO = 0 and 110101 for ADO = 1
+// Seven-bit device address is 1101000 for ADO = 0 and 1101001 for ADO = 1
 //mbed uses the eight-bit device address, so shift seven-bit addresses left by one!
 #define ADO 0
 #if ADO
@@ -168,6 +241,23 @@
 #else
 #define MPU9250_ADDRESS 0x68<<1  // Device address when ADO = 0
 #endif  
-
-
+void initconst(void);
+void mpu9250_irq_handler(void);
+void getMres(void);
+void getGres();
+void getAres();
+void readAccelData(int16_t * destination);
+void readGyroData(int16_t * destination);
+void readMagData(int16_t * destination);
+int16_t readTempData();
+void resetMPU9250();
+void initAK8963(float * destination);
+void initMPU9250();
+void calibrateMPU9250(float * dest1, float * dest2);
+void MPU9250SelfTest(float * destination);
+void MadgwickQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
+void MahonyQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
+ uint8_t readByte(uint8_t address, uint8_t subAddress);
+ void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest);
+ 
 #endif
