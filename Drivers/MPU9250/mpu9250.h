@@ -1,8 +1,4 @@
 #pragma once
-
-
-
-#ifndef MPU9250_H
 #define MPU9250_H
 #include <stdbool.h>
 #include <stdint.h>
@@ -241,23 +237,25 @@ extern float eInt[3];              // vector to hold integral error for Mahony m
 #else
 #define MPU9250_ADDRESS 0x68<<1  // Device address when ADO = 0
 #endif  
-void initconst(void);
-void mpu9250_irq_handler(void);
-void getMres(void);
-void getGres();
-void getAres();
-void readAccelData(int16_t * destination);
-void readGyroData(int16_t * destination);
-void readMagData(int16_t * destination);
-int16_t readTempData();
-void resetMPU9250();
-void initAK8963(float * destination);
-void initMPU9250();
-void calibrateMPU9250(float * dest1, float * dest2);
-void MPU9250SelfTest(float * destination);
-void MadgwickQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
-void MahonyQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
- uint8_t readByte(uint8_t address, uint8_t subAddress);
- void readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest);
- 
-#endif
+   void mpu9250_initconst(void);
+   void mpu9250_getMres(void);
+   void mpu9250_getGres();
+   void mpu9250_getAres();
+   void mpu9250_readAccelData(int16_t * destination);
+   void mpu9250_readGyroData(int16_t * destination);
+   void mpu9250_readMagData(int16_t * destination);
+int16_t mpu9250_readTempData();
+   void mpu9250_resetMPU9250();
+   void mpu9250_initAK8963(float * destination);
+   void mpu9250_init();
+   void mpu9250_Calibrate(float * dest1, float * dest2);
+   void mpu9250_SelfTest(float * destination);
+   void mpu9250_MadgwickQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
+   void mpu9250_MahonyQuaternionUpdate(float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
+uint8_t mpu9250_readByte(uint8_t address, uint8_t subAddress);
+   void mpu9250_readBytes(uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest);
+   void mpu9250_reset();
+   void mpu9250_calibrate(float * dest1, float * dest2);
+   
+   
+   

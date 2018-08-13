@@ -47,15 +47,18 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "mpu9250.h"
+
 
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+//#include <stdio.h>
 #include "nrf24l01.h"
 #include "nmea_parser.h"
 #include "gnss_utils.h"
 #include "at45db.h"
 #include "bmp280.h"
+#include "mpu9250.h"
+
+
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -95,6 +98,10 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+ int fputc(int c, FILE *stream)
+{
+   return ITM_SendChar(c);
+}
 
 /* USER CODE END 0 */
 
@@ -140,7 +147,7 @@ int main(void)
   MX_RNG_Init();
   /* USER CODE BEGIN 2 */
   at45db_init(&dataflash);
-  BMP280_Config_and_run(&bmp280);
+  if (BMP280_Config_and_run(&bmp280) == BMP280_OK) {
  //bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp280);
  //HAL_Delay(1000);
 
@@ -170,29 +177,33 @@ int8_t res = 0;
      pres   = bmp280_comp_pres_double(ucomp_data.uncomp_press, &bmp280);
     char resString[300];
     sprintf(resString, "UT: %d, UP: %d, T32: %ld, P32: %ld\r\n", \
-    ucomp_data.uncomp_temp, ucomp_data.uncomp_press, temp32, pres32);
+    ucomp_data.uncomp_temp, ucomp_data.uncomp_press, (long)temp32, (long)pres32);
 
-    //printf("UT: %d, UP: %d, T32: %d, P32: %d, P64: %d, P64N: %d, T: %f, P: %f\r\n", \
+    printf("UT: %d, UP: %d, T32: %d, P32: %d, P64: %d, P64N: %d, T: %f, P: %f\r\n", \
       ucomp_data.uncomp_temp, ucomp_data.uncomp_press, temp32, \
       pres32, pres64, pres64 / 256, temp, pres);
 }
+ }
 
-
-
-  uint8_t whoami = readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
-  printf("I AM 0x%x\n\r", whoami); 
-  printf("I SHOULD BE 0x71\n\r");
-  
+  uint8_t sprf_buf[255] = {0};
+ 
+  uint8_t whoami = mpu9250_readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
+  sprintf((char*)sprf_buf,"I AM 0x%x\n\r", whoami);
+ // for (uint8_t i = 0; i<255; i++) {sprf_buf[i] = sprf_buf[i] - 0x40;}
+  printf("%s",sprf_buf);
+  sprintf((char*)sprf_buf,"I SHOULD BE 0x71\n\r");
+  printf("%s",sprf_buf);
+  mpu9250_initconst();
   if (whoami == 0x71) // WHO_AM_I should always be 0x68
   {  
     printf("MPU9250 is online...\n\r");
     HAL_Delay(1000);//wait(1);
-    resetMPU9250(); // Reset registers to default in preparation for device calibration
-    calibrateMPU9250(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers  
+    mpu9250_reset(); // Reset registers to default in preparation for device calibration
+    mpu9250_calibrate(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers  
     HAL_Delay(2000);//wait(2);
-    initMPU9250(); 
+    mpu9250_init(); 
     printf("MPU9250 initialized for active data mode....\n\r"); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
-    initAK8963(magCalibration);
+    mpu9250_initAK8963(magCalibration);
     printf("AK8963 initialized for active data mode....\n\r"); // Initialize device for active mode read of magnetometer
     printf("Accelerometer full-scale range = %f  g\n\r", 2.0f*(float)(1<<Ascale));
     printf("Gyroscope full-scale range = %f  deg/s\n\r", 250.0f*(float)(1<<Gscale));
@@ -207,10 +218,22 @@ int8_t res = 0;
     printf("Could not connect to MPU9250: \n\r");
     printf("%#x \n",  whoami);
  
-    while(1) ; // Loop forever if communication doesn't happen
+    //while(1) ; // Loop forever if communication doesn't happen
     }
 
+    mpu9250_getAres(); // Get accelerometer sensitivity
+    mpu9250_getGres(); // Get gyro sensitivity
+    mpu9250_getMres(); // Get magnetometer sensitivity
+    printf("Accelerometer sensitivity is %f LSB/g \n\r", 1.0f/aRes);
+    printf("Gyroscope sensitivity is %f LSB/deg/s \n\r", 1.0f/gRes);
+    printf("Magnetometer sensitivity is %f LSB/G \n\r", 1.0f/mRes);
+    magbias[0] = +470.;  // User environmental x-axis correction in milliGauss, should be automatically calculated
+    magbias[1] = +120.;  // User environmental x-axis correction in milliGauss
+    magbias[2] = +125.;  // User environmental x-axis correction in milliGauss
 
+    
+    
+    
 
 
 
@@ -334,6 +357,109 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void mpu9250_irq_handler(void)
+{
+ if(mpu9250_readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
+
+    mpu9250_readAccelData(accelCount);  // Read the x/y/z adc values   
+    // Now we'll calculate the accleration value into actual g's
+    ax = (float)accelCount[0]*aRes - accelBias[0];  // get actual g value, this depends on scale being set
+    ay = (float)accelCount[1]*aRes - accelBias[1];   
+    az = (float)accelCount[2]*aRes - accelBias[2];  
+   
+    mpu9250_readGyroData(gyroCount);  // Read the x/y/z adc values
+    // Calculate the gyro value into actual degrees per second
+    gx = (float)gyroCount[0]*gRes - gyroBias[0];  // get actual gyro value, this depends on scale being set
+    gy = (float)gyroCount[1]*gRes - gyroBias[1];  
+    gz = (float)gyroCount[2]*gRes - gyroBias[2];   
+  
+    mpu9250_readMagData(magCount);  // Read the x/y/z adc values   
+    // Calculate the magnetometer values in milliGauss
+    // Include factory calibration per data sheet and user environmental corrections
+    mx = (float)magCount[0]*mRes*magCalibration[0] - magbias[0];  // get actual magnetometer value, this depends on scale being set
+    my = (float)magCount[1]*mRes*magCalibration[1] - magbias[1];  
+    mz = (float)magCount[2]*mRes*magCalibration[2] - magbias[2];   
+  }
+   
+    Now = HAL_GetTick();
+    deltat = (float)((Now - lastUpdate)/1000000.0f) ; // set integration time by time elapsed since last filter update
+    lastUpdate = Now;
+    
+    sum += deltat;
+    sumCount++;
+    
+//    if(lastUpdate - firstUpdate > 10000000.0f) {
+//     beta = 0.04;  // decrease filter gain after stabilized
+//     zeta = 0.015; // increasey bias drift gain after stabilized
+ //   }
+    
+   // Pass gyro rate as rad/s
+ mpu9250_MadgwickQuaternionUpdate(ax, ay, az, gx*PI/180.0f, gy*PI/180.0f, gz*PI/180.0f,  my,  mx, mz);
+ // mpu9250.MahonyQuaternionUpdate(ax, ay, az, gx*PI/180.0f, gy*PI/180.0f, gz*PI/180.0f, my, mx, mz);
+
+    // Serial print and/or display at 0.5 s rate independent of data rates
+    delt_t = HAL_GetTick() - count;
+    if (delt_t > 500) { // update LCD once per half-second independent of read rate
+
+    printf("ax = %f", 1000*ax); 
+    printf(" ay = %f", 1000*ay); 
+    printf(" az = %f  mg\n\r", 1000*az); 
+
+    printf("gx = %f", gx); 
+    printf(" gy = %f", gy); 
+    printf(" gz = %f  deg/s\n\r", gz); 
+    
+    printf("gx = %f", mx); 
+    printf(" gy = %f", my); 
+    printf(" gz = %f  mG\n\r", mz); 
+    
+    tempCount = mpu9250_readTempData();  // Read the adc values
+    temperature = ((float) tempCount) / 333.87f + 21.0f; // Temperature in degrees Centigrade
+    printf(" temperature = %f  C\n\r", temperature); 
+    
+    printf("q0 = %f\n\r", q[0]);
+    printf("q1 = %f\n\r", q[1]);
+    printf("q2 = %f\n\r", q[2]);
+    printf("q3 = %f\n\r", q[3]);      
+    
+  //  lcd.clear();
+  //  lcd.printString("MPU9250", 0, 0);
+  //  lcd.printString("x   y   z", 0, 1);
+  //  lcd.setXYAddress(0, 2); lcd.printChar((char)(1000*ax));
+  // lcd.setXYAddress(20, 2); lcd.printChar((char)(1000*ay));
+  //  lcd.setXYAddress(40, 2); lcd.printChar((char)(1000*az)); lcd.printString("mg", 66, 2);
+    
+    
+  // Define output variables from updated quaternion---these are Tait-Bryan angles, commonly used in aircraft orientation.
+  // In this coordinate system, the positive z-axis is down toward Earth. 
+  // Yaw is the angle between Sensor x-axis and Earth magnetic North (or true North if corrected for local declination, looking down on the sensor positive yaw is counterclockwise.
+  // Pitch is angle between sensor x-axis and Earth ground plane, toward the Earth is positive, up toward the sky is negative.
+  // Roll is angle between sensor y-axis and Earth ground plane, y-axis up is positive roll.
+  // These arise from the definition of the homogeneous rotation matrix constructed from quaternions.
+  // Tait-Bryan angles as well as Euler angles are non-commutative; that is, the get the correct orientation the rotations must be
+  // applied in the correct order which for this configuration is yaw, pitch, and then roll.
+  // For more see http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles which has additional links.
+    yaw   = atan2(2.0f * (q[1] * q[2] + q[0] * q[3]), q[0] * q[0] + q[1] * q[1] - q[2] * q[2] - q[3] * q[3]);   
+    pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
+    roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
+    pitch *= 180.0f / PI;
+    yaw   *= 180.0f / PI; 
+    yaw   -= 13.8f; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
+    roll  *= 180.0f / PI;
+
+    printf("Yaw, Pitch, Roll: %f %f %f\n\r", yaw, pitch, roll);
+    printf("average rate = %f\n\r", (float) sumCount/sum);
+ 
+    count = HAL_GetTick(); 
+    sum = 0;
+    sumCount = 0; 
+}
+}
+
+
+
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 {
@@ -343,7 +469,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
     nrf_irq_handler(&nrf);
   } 
- else if(GPIO_Pin== NRF_IRQ_Pin)
+ else if(GPIO_Pin== MPU9250_INT_Pin)
   {
     mpu9250_irq_handler();
     __NOP();
